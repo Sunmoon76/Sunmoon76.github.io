@@ -1469,7 +1469,7 @@ pre code {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #2e4966;
+  background: #3d044f;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -3029,7 +3029,7 @@ ul.breadcrumb li + li:last-child {
   }
 }
 body {
-  background: url("/assets/background.jpg");
+  background: url("/assets/background1.jpg");
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-position: 50% 50%;
@@ -3044,7 +3044,7 @@ body {
 }
 .sidebar {
   transition-duration: 0.4s;
-  opacity: 1;
+  opacity: 0.9;
 }
 .posts-expand .post-title-link {
   color: #222;
