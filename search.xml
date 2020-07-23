@@ -262,6 +262,7 @@
       <tags>
         <tag>基础</tag>
         <tag>学习</tag>
+        <tag>面向对象</tag>
       </tags>
   </entry>
   <entry>
@@ -505,6 +506,237 @@
         <tag>学习</tag>
         <tag>问题</tag>
         <tag>集合</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>继承、抽象类与模板设计模式、final关键字</title>
+    <url>/2020/07/23/%E7%BB%A7%E6%89%BF%E3%80%81%E6%8A%BD%E8%B1%A1%E7%B1%BB%E4%B8%8E%E6%A8%A1%E6%9D%BF%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81final%E5%85%B3%E9%94%AE%E5%AD%97/</url>
+    <content><![CDATA[<h2 id="一、匿名对象"><a href="#一、匿名对象" class="headerlink" title="一、匿名对象"></a>一、匿名对象</h2><p>匿名对象：没有名字的对象</p>
+<p>有名字：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Student stu = <span class="keyword">new</span> Student()</span><br></pre></td></tr></table></figure>
+
+<p>没有名字：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">new</span> Student();</span><br></pre></td></tr></table></figure>
+
+
+
+<p>匿名对象好处：稍微简化了操作</p>
+<p>使用场景：</p>
+<ul>
+<li>如果某个对象只需要使用一次，那么可以使用匿名对象。</li>
+<li>匿名对象可以当作参数传递</li>
+</ul>
+<a id="more"></a>
+
+<h2 id="二、继承"><a href="#二、继承" class="headerlink" title="二、继承"></a>二、继承</h2><p>继承是多态的前提，没有继承就没有多态</p>
+<p>Java中的继承描述的是事物之间的所属关系，比如人属于动物，就可以让人区继承动物。</p>
+<p>子类继承父类，会拥有父类的所有成员(父类的私有成员也能继承，不过无法直接访问)</p>
+<p><strong>继承的好处：提高代码的复用性</strong></p>
+<h3 id="2-1-继承的格式"><a href="#2-1-继承的格式" class="headerlink" title="2.1 继承的格式"></a>2.1 继承的格式</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">A</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-子类不能继承的内容"><a href="#2-2-子类不能继承的内容" class="headerlink" title="2.2 子类不能继承的内容"></a>2.2 子类不能继承的内容</h3><ul>
+<li>父类中的构造方法子类是无法继承的</li>
+<li>父类中的私有成员子类可以继承，但是继承了也没法【直接使用】，可以间接使用，通过<code>get/set</code>方法</li>
+</ul>
+<h3 id="2-3-继承后的特点——成员变量"><a href="#2-3-继承后的特点——成员变量" class="headerlink" title="2.3 继承后的特点——成员变量"></a>2.3 继承后的特点——成员变量</h3><ul>
+<li>如果子父类的成员变量不同名时，那么访问时取决于是哪个成员变量名</li>
+<li>如果子父类成员变量同名，那么在 子类中优先访问子类的成员变量</li>
+<li>如果子父类成员变量同名了，那么想要在子类中访问父类的成员变量，需要使用<code>super.成员变量名</code>来访问。</li>
+</ul>
+<h3 id="2-4-继承后的特点——成员方法"><a href="#2-4-继承后的特点——成员方法" class="headerlink" title="2.4 继承后的特点——成员方法"></a>2.4 继承后的特点——成员方法</h3><ul>
+<li>如果子父类成员方法不同名时，取决于调用哪个方法名</li>
+<li>如果子父类的成员方法同名时，那么使用子类对象去调用方法时，优先访问子类的成员方法。</li>
+<li>我们可以在子类的方法中，使用<code>super.方法名()</code>，指定父类中的某个方法</li>
+</ul>
+<h3 id="2-5-继承后的特点——构造方法"><a href="#2-5-继承后的特点——构造方法" class="headerlink" title="2.5 继承后的特点——构造方法"></a>2.5 继承后的特点——构造方法</h3><ul>
+<li><p>子类无法继承父类的构造方法</p>
+</li>
+<li><p>子类的任何构造方法中第一行会有一句隐藏的代码<code>super();</code>，调用父类的无参构造</p>
+</li>
+</ul>
+<h3 id="2-6-方法重写"><a href="#2-6-方法重写" class="headerlink" title="2.6 方法重写"></a>2.6 方法重写</h3><p>注意事项：</p>
+<ul>
+<li>在方法重写的，参数列表必须相同</li>
+<li>子类方法的权限必须大于等于父类方法的权限</li>
+<li>私有方法不能重写</li>
+</ul>
+<p><code>方法重写时,方法名,参数列表,修饰符,返回值类型一般都是一致的</code></p>
+<p>应用场景：父类方法不能满足子类需要时，就可以在子类进行方法的重写。</p>
+<p>@Override：方法重写注解</p>
+<p>作用：如果我们在方法上写了@Override注解，那么就代表方法是重写的，编译器就会帮助我们检查重写的语法是否正确</p>
+<h3 id="2-7-super-…-和this-…"><a href="#2-7-super-…-和this-…" class="headerlink" title="2.7 super(…)和this(…)"></a>2.7 super(…)和this(…)</h3><h4 id="2-7-1-super"><a href="#2-7-1-super" class="headerlink" title="2.7.1 super"></a>2.7.1 super</h4><p>super的三种用途：</p>
+<ul>
+<li>可以访问父类的成员变量：<code>super.变量名;</code></li>
+<li>可以访问父类的成员方法：<code>super.方法名();</code></li>
+<li>可以调用父类的构造方法：<code>super(参数);</code></li>
+</ul>
+<h4 id="2-7-2-this"><a href="#2-7-2-this" class="headerlink" title="2.7.2 this"></a>2.7.2 this</h4><p>this的三种用途：</p>
+<ul>
+<li>可以访问本类的成员变量：<code>this.变量名;</code></li>
+<li>调用本类的其他成员方法：<code>this.方法名();</code></li>
+<li>调用本类的其他构造方法：<code>this(参数);</code></li>
+</ul>
+<h3 id="2-8-继承的特点"><a href="#2-8-继承的特点" class="headerlink" title="2.8 继承的特点"></a>2.8 继承的特点</h3><ol>
+<li>Java只支持单继承，不支持多继承<ul>
+<li>一个子类，最多只能有一个父类</li>
+</ul>
+</li>
+<li>一个类可以有多个子类。<ul>
+<li>一个父类，可以有多个子类</li>
+</ul>
+</li>
+<li>可以多层继承<ul>
+<li>一个子类，可以继承一个父类，这个父类可以继承他的父类，它的父类有继承其他类</li>
+</ul>
+</li>
+</ol>
+<h2 id="三、抽象类"><a href="#三、抽象类" class="headerlink" title="三、抽象类"></a>三、抽象类</h2><h3 id="3-1-抽象类的概念和引入"><a href="#3-1-抽象类的概念和引入" class="headerlink" title="3.1 抽象类的概念和引入"></a>3.1 抽象类的概念和引入</h3><p>抽象类：含有抽象方法的类，那么该类一定是一个抽象类。</p>
+<p>抽象方法：只有方法的声明(头部)，没有方法体的方法，我们称为抽象方法</p>
+<h3 id="3-2-abstract使用格式"><a href="#3-2-abstract使用格式" class="headerlink" title="3.2 abstract使用格式"></a>3.2 abstract使用格式</h3><p>抽象方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> 返回值类型 方法名(参数列表);</span><br></pre></td></tr></table></figure>
+
+<p>抽象类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> 类名</span>&#123;</span><br><span class="line">    <span class="comment">//成员变量</span></span><br><span class="line">    <span class="comment">//成员方法</span></span><br><span class="line">    <span class="comment">//抽象方法</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Animal</span></span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>抽象类的使用：</p>
+<ol>
+<li>抽象类不能直接new对象</li>
+<li>抽象类天生就是被其它类继承的</li>
+<li>其他类继承抽象类后，必须重写抽象类的所有抽象方法，让后才能创建子类对象，否则子类还会是一个抽象类</li>
+</ol>
+<p>【定义抽象类—&gt;定义一个子类继承抽象类—&gt;重写抽象类中的所有抽象方法】</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Animal</span></span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Cat</span> <span class="keyword">extends</span> <span class="title">Animal</span></span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"猫跑跑跑..."</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-3-抽象类的特征和注意事项"><a href="#3-3-抽象类的特征和注意事项" class="headerlink" title="3.3 抽象类的特征和注意事项"></a>3.3 抽象类的特征和注意事项</h3><p>抽象类的特点：有得有失</p>
+<ul>
+<li><p>得：得到了拥有抽象方法得能力</p>
+</li>
+<li><p>失：失去了创建对象得能力</p>
+</li>
+</ul>
+<p>除了以上两点，在其他方面与普通类没有多大区别</p>
+<p>注意事项：</p>
+<ul>
+<li>抽象类不能创建对象</li>
+<li>抽象类是有构造方法的，构造方法可以给成员变量赋值</li>
+<li>抽象类中，不一定含有抽象方法，但是含有抽象方法的类一定是抽象类（抽象类中可以没有抽象方法）</li>
+<li>抽象类的子类，必须重写抽象父类中所有的抽象方法，不然子类也是一个抽象类</li>
+<li>抽象类的作用为了让子类继承，抽象方法的作用为了让所有子类重写，作为类的模板！</li>
+</ul>
+<h3 id="3-4-抽象类存在的意义"><a href="#3-4-抽象类存在的意义" class="headerlink" title="3.4 抽象类存在的意义"></a>3.4 抽象类存在的意义</h3><p>抽象类体现的是模板思想</p>
+<h3 id="3-5-模板设计模式"><a href="#3-5-模板设计模式" class="headerlink" title="3.5 模板设计模式"></a>3.5 模板设计模式</h3><p><code>模板模式思想：将固定的流程定义在父类中，不同的地方使用抽象方法，让子类去继承重写</code>。</p>
+<p>需求：</p>
+<ul>
+<li><p>新司机开车：开门、点火、双手紧握方向盘、刹车、熄火</p>
+</li>
+<li><p>老司机开车：开门、点火、右手握方向盘左手抽烟、刹车、熄火</p>
+</li>
+</ul>
+<p>案例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 父类：司机类</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Driver</span> </span>&#123;</span><br><span class="line">    <span class="comment">//成员变量</span></span><br><span class="line">    <span class="comment">//成员方法</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 开车的方法</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">driver</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"开门..."</span>);</span><br><span class="line">        System.out.println(<span class="string">"点火..."</span>);</span><br><span class="line">        <span class="comment">//不同的司机开车的姿势不一样</span></span><br><span class="line">        ziShi();</span><br><span class="line">        System.out.println(<span class="string">"刹车..."</span>);</span><br><span class="line">        System.out.println(<span class="string">"熄火..."</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 开车的姿势</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">ziShi</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 子类：新司机</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NewDriver</span> <span class="keyword">extends</span> <span class="title">Driver</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ziShi</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"双手紧握方向盘..."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 子类：老司机</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OldDriver</span> <span class="keyword">extends</span> <span class="title">Driver</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ziShi</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"右手握方向盘左手抽烟..."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 测试类</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestDriver</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        NewDriver nb = <span class="keyword">new</span> NewDriver();</span><br><span class="line">        nb.driver();</span><br><span class="line">        System.out.println(<span class="string">"=================="</span>);</span><br><span class="line">        OldDriver ob = <span class="keyword">new</span> OldDriver();</span><br><span class="line">        ob.driver();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="四、final关键字"><a href="#四、final关键字" class="headerlink" title="四、final关键字"></a>四、final关键字</h2><h3 id="4-1-final关键字"><a href="#4-1-final关键字" class="headerlink" title="4.1 final关键字"></a>4.1 final关键字</h3><p><code>final</code>：最终的，最后的，不可变的</p>
+<p>可以用来修饰：<code>类、成员变量、局部变量（基本类型、引用类型），成员方法</code></p>
+<h3 id="4-2-final的作用"><a href="#4-2-final的作用" class="headerlink" title="4.2 final的作用"></a>4.2 final的作用</h3><h4 id="4-2-1-final修饰类"><a href="#4-2-1-final修饰类" class="headerlink" title="4.2.1 final修饰类"></a>4.2.1 final修饰类</h4><p>作用：<code>被final修饰的类</code>，称为太监类：该类<code>不能被继承</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Fu</span></span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Zi</span> <span class="keyword">extends</span> <span class="title">Fu</span></span>&#123;	<span class="comment">//编译报错，因为不能继承final修饰的类Fu</span></span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-2-2-final修饰方法"><a href="#4-2-2-final修饰方法" class="headerlink" title="4.2.2 final修饰方法"></a>4.2.2 final修饰方法</h4><p>作用：<code>被final修饰的方法，称为最终方法：该方法不能被子类重写</code></p>
+<h4 id="4-2-3-final修饰局部变量：基本类型变量"><a href="#4-2-3-final修饰局部变量：基本类型变量" class="headerlink" title="4.2.3 final修饰局部变量：基本类型变量"></a>4.2.3 final修饰局部变量：基本类型变量</h4><p>作用：<code>被final修饰的基本类型变量，只能赋值一次。</code>【这种变量一般称为常量，<code>常量名一般大写，多个单词之间下划线隔开</code>】</p>
+<h4 id="4-2-4-final修饰引用类型变量"><a href="#4-2-4-final修饰引用类型变量" class="headerlink" title="4.2.4 final修饰引用类型变量"></a>4.2.4 final修饰引用类型变量</h4><p>作用：<code>被final修饰的引用类型变量，只能赋值一次</code>，该引用类型中<code>保存的地址值不能改变</code>，但是<code>地址指向的空间中的内容是可以改变的</code>。</p>
+<h4 id="4-2-5-final修饰成员变量"><a href="#4-2-5-final修饰成员变量" class="headerlink" title="4.2.5 final修饰成员变量"></a>4.2.5 final修饰成员变量</h4><p>作用：<code>被final修饰的成员变量，只能赋值一次，必须在创建对象之前赋值(默认值不算)</code>。</p>
+<p>我们可以在<code>定义成员变量时直接赋值</code>，也可以先定义成员变量，<code>在构造方法给成员变量赋值</code>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Cat</span></span>&#123;</span><br><span class="line">	<span class="keyword">final</span> <span class="keyword">int</span> AGE = <span class="number">10</span>; <span class="comment">//直接赋值</span></span><br><span class="line">	<span class="keyword">final</span> String NAME;  <span class="comment">//先定义不赋值</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Cat</span><span class="params">()</span></span>&#123;</span><br><span class="line">        NAME = “加菲”; <span class="comment">//在构造方法中赋值</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-2-6-final的注意事项"><a href="#4-2-6-final的注意事项" class="headerlink" title="4.2.6 final的注意事项"></a>4.2.6 final的注意事项</h4><ol>
+<li><code>final和abstract不能同时修饰类</code></li>
+<li><code>final和abstract不能同时修饰方法</code></li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h3 id="匿名对象"><a href="#匿名对象" class="headerlink" title="匿名对象"></a>匿名对象</h3><p>概念：如果我们创建对象时，没有用变量接收对象的地址，那么就是一个匿名对象。</p>
+<p>格式：<code>new 数据类型();</code></p>
+<p>好处：稍微简化我们的写法</p>
+<p>使用场景：</p>
+<ul>
+<li>如果某个对象只用一次，可以使用匿名对象</li>
+<li>可以使用匿名对象作为方法参数传递</li>
+</ul>
+<h3 id="继承"><a href="#继承" class="headerlink" title="继承"></a>继承</h3><p>概念：Java中国继承描述的时事务之间的所属关系：比如老师属于员工，就可以让老师类继承员工类。</p>
+<p>好处：提高代码的复用性。子类继承父类会自动拥有父类的所有成员</p>
+<p>特点：类与类之间只能单继承，Java支持多级继承，一个父类可以有多个子类</p>
+<p>方法的重写：</p>
+<ul>
+<li>如果子类中出现了和父类一样的方法，那么这个就是方法得重写</li>
+<li>使用场景：如果父类的方法不能满足子类的需求，可以在子类中重写方法</li>
+</ul>
+<p>继承中构造方法的特点：</p>
+<ol>
+<li>构造方法不能继承</li>
+<li>创建子类对象时，会先执行父类的构造方法，因为在子类构造方法的第一行有一个隐藏的super</li>
+<li>我们也可以使用super手动调用父类的构造方法。</li>
+<li>如果super调用父类的构造方法，只能写在第一行。</li>
+</ol>
+<p>super关键字：</p>
+<ul>
+<li><p>可以访问父类的成员方法：<code>super.方法名()</code></p>
+</li>
+<li><p>可以访问父类的成员变量：<code>super.变量名</code></p>
+</li>
+<li><p>可以访问父类的构造方法：<code>super()</code></p>
+</li>
+</ul>
+<p>this关键字：</p>
+<ul>
+<li><p>可以访问本类的成员方法：<code>this.方法名()</code></p>
+</li>
+<li><p>可以访问本类的成员变量：<code>this.变量名</code></p>
+</li>
+<li><p>可以访问本类的构造方法：<code>this()</code></p>
+</li>
+</ul>
+<h3 id="抽象类"><a href="#抽象类" class="headerlink" title="抽象类"></a>抽象类</h3><p>当某个方法的方法体我们说不清，不知道怎么写时，可以把这个方法定义成抽象方法，抽象方法所在的类必须是抽象类。</p>
+<p>抽象类格式：<code>public abstract class 类名 {}</code></p>
+<p>抽象方法格式：<code>public abstract 返回值类型 方法名(参数列表);</code></p>
+<p>抽象类的使用：</p>
+<ol>
+<li>抽象类是给子类用的，我们要定义一个类，去继承抽象类。</li>
+<li>重写抽象类中的所有的抽象方法。</li>
+<li>创建这个子类对象，调用方法。</li>
+</ol>
+<p>抽象类的注意事项：</p>
+<ol>
+<li>抽象类不能创建对象</li>
+<li>抽象类中也可以有构造方法，构造方法是给子类使用的.</li>
+<li>抽象类中可以有抽象方法，也可以有非抽象的内容。抽象方法所在的类必须是一个抽象类。</li>
+<li>一个普通类在继承抽象类时，需要重写里面所有的抽象方法。一个抽象类在继承抽象类时，可以不重写里面的抽象方法。</li>
+<li>抽象类都是作为父类存在，抽象类体现的是模板思想【司机开车案例】</li>
+</ol>
+<h3 id="final关键字"><a href="#final关键字" class="headerlink" title="final关键字"></a>final关键字</h3><p><code>final</code>表示最终的不可改变的。</p>
+<p>注意：</p>
+<ul>
+<li><p>如果final修饰类，这个类不能被继承，但是可以继承其他类。</p>
+</li>
+<li><p>如果fianl修饰方法，这个方法不能被重写，但是可以被子类继承使用。</p>
+</li>
+<li><p>如果final修饰变量，该变量就变成了常量。只能被赋值一次，一旦赋值就不能更改了。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+      <tags>
+        <tag>基础</tag>
+        <tag>学习</tag>
+        <tag>面向对象</tag>
       </tags>
   </entry>
 </search>
