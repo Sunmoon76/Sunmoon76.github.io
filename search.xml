@@ -1471,4 +1471,404 @@
         <tag>API</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Collection、List、泛型、数据结构</title>
+    <url>/2020/07/29/Collection%E3%80%81List%E3%80%81%E6%B3%9B%E5%9E%8B%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</url>
+    <content><![CDATA[<h2 id="一、Collection集合"><a href="#一、Collection集合" class="headerlink" title="一、Collection集合"></a>一、Collection集合</h2><h3 id="1-1-集合概述"><a href="#1-1-集合概述" class="headerlink" title="1.1 集合概述"></a>1.1 集合概述</h3><ul>
+<li>集合：集合是一种容器 ，可以用来存储多个数据。</li>
+</ul>
+<p><strong>集合和数组的区别？</strong></p>
+<ul>
+<li>数组的长度是固定的，集合长度可变。</li>
+<li><strong>数据中可以存储</strong>任意类型的数据，包括<strong>基本类型和引用类型</strong>。<strong>集合只能存储引用类型数据</strong>，如果想要存储基本类型数据，需要使用基本类型对应的包装类(引用类型)。</li>
+</ul>
+<a id="more"></a>
+
+<h3 id="1-2-集合的继承体系"><a href="#1-2-集合的继承体系" class="headerlink" title="1.2 集合的继承体系"></a>1.2 集合的继承体系</h3><p>Collection：单列集合的根接口，用于存储一些列符合某种规则的元素。</p>
+<p>Collection的子接口、子接口特点及其常见实现类</p>
+<ul>
+<li><code>java.util.List</code>：List接口的特点是<strong>元素有序，且元素可重复</strong>。<ul>
+<li><code>java.util.LinkedList</code></li>
+<li><code>java.util.ArrayList</code></li>
+</ul>
+</li>
+<li><code>java.util.Set</code>：Set接口的特点是<strong>元素不可重复</strong>。<ul>
+<li><code>java.util.HashSet</code><ul>
+<li><code>java.util.LinkedHashSet</code></li>
+</ul>
+</li>
+<li><code>java.util.TreeSet</code></li>
+</ul>
+</li>
+</ul>
+<p>继承体系：</p>
+<p>Collection(interface)</p>
+<ul>
+<li>List(interface)<ul>
+<li>LinkedList(class)</li>
+<li>ArrayList(class)</li>
+</ul>
+</li>
+<li>Set(interface)<ul>
+<li>HashSet(class)<ul>
+<li>LinkedHashSet(class)</li>
+</ul>
+</li>
+<li>TreeSet(class)</li>
+</ul>
+</li>
+</ul>
+<p>注意：以上只是常用的一些集合，还有很多其他集合，可以查询API文档搜索Collection，查询其子接口及其子接口的实现类。</p>
+<h3 id="1-3-Collection中的常用方法"><a href="#1-3-Collection中的常用方法" class="headerlink" title="1.3 Collection中的常用方法"></a>1.3 Collection中的常用方法</h3><p>Collection是所有单列集合的父接口，所以在Collection中定义了一些共性的方法，这些方法可以用于操作所有单列集合。</p>
+<ul>
+<li><code>public boolean add(E e)</code>：把指定元素添加到集合中</li>
+<li><code>public void clear()</code>：清空集合元素</li>
+<li><code>public boolean remove(E e)</code>：在集合中移除指定的元素</li>
+<li><code>public boolean contains(Object obj)</code>：判断集合中是否包含给定的对象</li>
+<li><code>public boolean isEmpty()</code>：判断当前集合是否为空</li>
+<li><code>public int size()</code>：返回集合的长度</li>
+<li><code>public Object[] toArray()</code>：把集合中的元素存储到数组中</li>
+</ul>
+<p>Collection还有很多其他的方法，查看API即可查看学习。</p>
+<p>方法演示：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo01CollectionMethod</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//创建集合</span></span><br><span class="line">        Collection&lt;String&gt; c = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        c.add(<span class="string">"aa"</span>);</span><br><span class="line">        c.add(<span class="string">"bb"</span>);</span><br><span class="line">        c.add(<span class="string">"cc"</span>);</span><br><span class="line">        c.add(<span class="string">"dd"</span>);</span><br><span class="line">        c.add(<span class="string">"ee"</span>);</span><br><span class="line">        System.out.println(c);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//将集合转成数组</span></span><br><span class="line">        Object[] obj = c.toArray();</span><br><span class="line">        System.out.println(Arrays.toString(obj));</span><br><span class="line"></span><br><span class="line">        <span class="comment">//判度集合中是否包含指定元素</span></span><br><span class="line">        System.out.println(c.contains(<span class="string">"cc"</span>));</span><br><span class="line"></span><br><span class="line">        <span class="comment">//删除指定元素</span></span><br><span class="line">        <span class="keyword">boolean</span> flag = c.remove(<span class="string">"cc"</span>);</span><br><span class="line">        System.out.println(flag);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取集合大小</span></span><br><span class="line">        <span class="keyword">int</span> s = c.size();</span><br><span class="line">        System.out.println(s);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//清空集合</span></span><br><span class="line">        c.clear();</span><br><span class="line">        System.out.println(c);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//判度胺集合是否为空</span></span><br><span class="line">        System.out.println(c.isEmpty());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="二、Iterator迭代器"><a href="#二、Iterator迭代器" class="headerlink" title="二、Iterator迭代器"></a>二、Iterator迭代器</h2><h3 id="2-1-Iterator介绍"><a href="#2-1-Iterator介绍" class="headerlink" title="2.1 Iterator介绍"></a>2.1 Iterator介绍</h3><p><strong>迭代</strong>：就是Collection集合元素的通用获取方法。在取元素之前先判断集合中有没有元素，如果有，就把这个元素取出来，然后继续判断，重复这个过程，直到集合中所有元素全部驱逐。这种取出的方法叫做迭代。</p>
+<p>在Java中，专门提供了一个<code>接口</code>来实现迭代操作：<code>java.util.Iterator</code></p>
+<p>迭代器其实就是一个遍历集合的工具，内部有一个光标，这个光标最开始指向了集合的最开头位置。</p>
+<p>获取迭代器的方法：</p>
+<ul>
+<li><code>public Iterator iteratoc()</code>:获取集合对应的迭代器，进行集合的遍历。<ul>
+<li>使用格式：<code>Iterator&lt;集合中存储的数据类型&gt; it = 集合变量名.iterator();</code></li>
+</ul>
+</li>
+</ul>
+<p>Iterator接口的常用方法：</p>
+<ul>
+<li><code>public boolean hasNext()</code>：判断集合中是否还有元素可以获取，有则返回true</li>
+<li><code>public E next()</code>：获取当前光标位置的元素，然后把光标向后移动</li>
+</ul>
+<p>使用示例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo01Iterator</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Collection&lt;String&gt; c = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        c.add(<span class="string">"aa"</span>);</span><br><span class="line">        c.add(<span class="string">"bb"</span>);</span><br><span class="line">        c.add(<span class="string">"cc"</span>);</span><br><span class="line">        c.add(<span class="string">"dd"</span>);</span><br><span class="line">        c.add(<span class="string">"ee"</span>);</span><br><span class="line">        <span class="comment">//获取迭代器对象</span></span><br><span class="line">        Iterator&lt;String&gt; it = c.iterator();</span><br><span class="line">        <span class="comment">//循环判断光标处有没有元素</span></span><br><span class="line">        <span class="keyword">while</span> (it.hasNext())&#123;</span><br><span class="line">            <span class="comment">//有则进入循环，next方法，获取元素并且方法会让光标向后移动一位。</span></span><br><span class="line">            String str = it.next();</span><br><span class="line">            System.out.println(str);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>扩展知识：</p>
+<ol>
+<li><p>在进行集合元素获取时，如果集合中已经没有元素了，再继续使用next方法时，将会抛出<code>java.util.NoSuchElementException</code>(没有集合少元素异常)</p>
+</li>
+<li><p>在进行集合元素获取时，在这个过程中同时进行添加或移除操作，将无法进行迭代操作，将会抛出<code>java.util.ConcurrentModificationException</code>(并发修改异常)</p>
+</li>
+</ol>
+</blockquote>
+<h3 id="2-2-迭代器实现原理"><a href="#2-2-迭代器实现原理" class="headerlink" title="2.2 迭代器实现原理"></a>2.2 迭代器实现原理</h3><h3 id="2-3-增强for循环"><a href="#2-3-增强for循环" class="headerlink" title="2.3 增强for循环"></a>2.3 增强for循环</h3><p>增强for循环(也称<code>for each循环</code>)是 <code>JDK5</code>以后出来的一个高级for循环，专门用来遍历数组和集合的。</p>
+<p><strong>遍历集合</strong></p>
+<ul>
+<li>它的内部原理其实是个Iterator迭代器，所以在遍历的过程中，不能用集合的删除方法对集合中的元素进行删除操作。</li>
+</ul>
+<p><strong>遍历数组</strong></p>
+<ul>
+<li>增强for是一种语法糖，语法糖指的是被指没有变，只不过写法更加优雅，更加简洁了</li>
+<li>增强for的本质就是for循环</li>
+</ul>
+<p>使用格式：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span>(元素数据类型 变量名 : 需要遍历的集合或数组)&#123;</span><br><span class="line">	<span class="comment">//操作</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>示例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo01ForEach</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>[] arrInt = &#123;<span class="number">11</span>,<span class="number">22</span>,<span class="number">33</span>,<span class="number">44</span>,<span class="number">55</span>&#125;;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> n : arrInt)&#123;</span><br><span class="line">            System.out.println(n);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        Collection&lt;String&gt; c = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        c.add(<span class="string">"aa"</span>);</span><br><span class="line">        c.add(<span class="string">"bb"</span>);</span><br><span class="line">        c.add(<span class="string">"cc"</span>);</span><br><span class="line">        c.add(<span class="string">"dd"</span>);</span><br><span class="line">        c.add(<span class="string">"ee"</span>);</span><br><span class="line">        <span class="keyword">for</span> (String s : c) &#123;</span><br><span class="line">            System.out.println(s);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="三、泛型"><a href="#三、泛型" class="headerlink" title="三、泛型"></a>三、泛型</h2><h3 id="3-1-什么是泛型"><a href="#3-1-什么是泛型" class="headerlink" title="3.1 什么是泛型"></a>3.1 什么是泛型</h3><p>泛型：泛型是一种未知的，不确定的类型</p>
+<p>举例：比如<code>ArrayList&lt;E&gt;</code>，这个<strong>E</strong>就是泛型。但是E表示哪种数据类型，不确定，索引泛型是一种未知的，不确定的类型。</p>
+<ul>
+<li>虽然泛型类型E表示是一种不确定的类型，但是等我们将来使用这个类创建对象时，这个E表示的数据类型就可以确定下来。</li>
+<li>比如：<ul>
+<li>ArrayList<String> 此时这个泛型类型E表示的就是String</li>
+<li>ArrayList<Person> 此时这个泛型类型E表示的就是Person</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>泛型也是可以省略的，如果省略泛型，相当于泛型是Object。</p>
+</blockquote>
+<h3 id="3-2-使用泛型的好处"><a href="#3-2-使用泛型的好处" class="headerlink" title="3.2 使用泛型的好处"></a>3.2 使用泛型的好处</h3><ul>
+<li>可以省略向下转型的代码。<ul>
+<li>可以将运行时的问题提前到编译时期。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>小结：</p>
+<p>1.将运行期类型转换异常<code>(java.util.ClassCastException)</code>，转移到了编译时期，提前编译报错。</p>
+<p>2.避免了进行强制类型转换的麻烦</p>
+</blockquote>
+<blockquote>
+<p>扩展：</p>
+<p>泛型擦除：Java中的泛型时伪泛型，泛型只在源代码阶段有效，一旦编译，泛型就会消失。也叫泛型擦除。</p>
+</blockquote>
+<h3 id="3-3-泛型的定义和使用"><a href="#3-3-泛型的定义和使用" class="headerlink" title="3.3 泛型的定义和使用"></a>3.3 泛型的定义和使用</h3><h4 id="3-3-1-含有泛型的类"><a href="#3-3-1-含有泛型的类" class="headerlink" title="3.3.1 含有泛型的类"></a>3.3.1 含有泛型的类</h4><p>如果在定义类的时候，在类名后面加上<T>,就表示在类中定义了一个不确定的类型T。</p>
+<ul>
+<li>T可以是任何字母，一般是一个大写字母。</li>
+<li>T真正表示一种数据类型，只不过它在刚写出来的时候是未知的</li>
+<li>当我们使用这个类(创建对象)时，会指定这个T是什么类型，那么此时这个T表示的数据类型就可以确定了。</li>
+<li>这个T就是一个泛型。</li>
+</ul>
+<p>定义格式：<code>修饰符 class 类名&lt;代表泛型的变量&gt; {...}</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyClass</span>&lt;<span class="title">T</span>&gt;</span>&#123;<span class="comment">//定义了一个泛型类型T</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> T <span class="title">method</span><span class="params">(T t)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> t;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>小结：</strong>如果是在类上面定义的泛型，在整个类中都可以使用，类上面定义的泛型需要等到使用这个类(创建对象)，才会指定这个泛型是什么类型。</p>
+</blockquote>
+<h4 id="3-3-2-含有泛型的方法"><a href="#3-3-2-含有泛型的方法" class="headerlink" title="3.3.2 含有泛型的方法"></a>3.3.2 含有泛型的方法</h4><p>如果想要在调用方法时才确定具体的类型，那么我们可以使用泛型方法(在方法上定义泛型)</p>
+<ul>
+<li>在方法上定义泛型，那么这个泛型会在调用方法时才指定。</li>
+</ul>
+<p>定义格式：<code>修饰符 &lt;代表泛型的变量&gt; 返回值类型 方法名(参数列表){方法体}</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">     &lt;E&gt;：表示方法中定义了一个未知的，不确定的泛型类型E</span></span><br><span class="line"><span class="comment">     返回值处E：使用了未知的，不确定的类型E当作了返回值类型</span></span><br><span class="line"><span class="comment">     参数上的E：实用类未知的,不确定的类型E当作了参数</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> &lt;E&gt; <span class="function">E <span class="title">method</span><span class="params">(E e)</span></span>&#123;</span><br><span class="line">    <span class="comment">//方法体</span></span><br><span class="line">	<span class="keyword">return</span> t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>小结：</strong>如果是在方法上定义的泛型，在方法中可以使用。方法上面定义的泛型需要等到调用方法时才能确定这个泛型是什么类型。</p>
+</blockquote>
+<h4 id="3-3-3-含有泛型的接口"><a href="#3-3-3-含有泛型的接口" class="headerlink" title="3.3.3 含有泛型的接口"></a>3.3.3 含有泛型的接口</h4><p>如果在定义接口时，在接口后面写上<T>，那么就表示在接口中定义了一个泛型类型T(不确定的类型)</p>
+<p>定义格式：<code>修饰符 interface 接口名&lt;代表泛型的变量&gt;{...}</code></p>
+<p>定义在接口上的泛型有两种使用方式：</p>
+<ul>
+<li>在实现类实现接口时，可以直接指定泛型类型</li>
+<li>实现类在实现接口时，可以不指定泛型，等到使用实现类时再指定</li>
+</ul>
+<p><strong>演示：</strong></p>
+<p>接口：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MyInterface</span>&lt;<span class="title">T</span>&gt; </span>&#123;<span class="comment">// 在接口中定义了一个泛型</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 定义方法，使用泛型类型T当作参数类型和返回值类型</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> t</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> T <span class="title">method</span><span class="params">(T t)</span></span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实现类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 实现类在实现接口时指定泛型</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 实现类在实现接口时，可以直接在接口后面写上尖括号去指定泛型</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Sunmoon</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyInterfaceImpl1</span> <span class="keyword">implements</span> <span class="title">MyInterface</span>&lt;<span class="title">Phone</span>&gt; </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Phone <span class="title">method</span><span class="params">(Phone phone)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> phone;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 实现类在实现接口时,不指定泛型</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 我们在定义类或者接口时，只有在当前类或者接口名字后面写的尖括号是在定义泛型，其他都是再使用泛型</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyInterfaceImpl2</span>&lt;<span class="title">T</span>&gt; <span class="keyword">implements</span> <span class="title">MyInterface</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">method</span><span class="params">(T t)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> t;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 接口泛型测试类</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo03GenericTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        MyInterfaceImpl1 mi1 = <span class="keyword">new</span> MyInterfaceImpl1();</span><br><span class="line">        Phone phone = mi1.method(<span class="keyword">new</span> Phone());</span><br><span class="line"></span><br><span class="line">        MyInterfaceImpl2&lt;Pad&gt; mi2 = <span class="keyword">new</span> MyInterfaceImpl2&lt;&gt;();</span><br><span class="line">        Pad pad = mi2.method(<span class="keyword">new</span> Pad());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>小贴士：</p>
+<ul>
+<li>泛型表示一种未知的数据类型<ul>
+<li>定义在类上的泛型，使用类的时候会确定泛型的类型</li>
+<li>定义在方法上的泛型，会在使用方法的时候确定泛型</li>
+<li>定义在接口上的泛型，需要使用接口的时候确定泛型。</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<h3 id="3-3-4-泛型通配符"><a href="#3-3-4-泛型通配符" class="headerlink" title="3.3.4 泛型通配符"></a>3.3.4 泛型通配符</h3><p>当使用泛型类或者接口时，传递的数据中，泛型类型不确定，可以通过通配符<code>&lt;?&gt;</code>表示。但是一旦使用泛型的通配<br>符后，只能使用Object类中的共性方法，集合中元素自身方法无法使用。</p>
+<h5 id="通配符基本使用"><a href="#通配符基本使用" class="headerlink" title="通配符基本使用"></a>通配符基本使用</h5><p><strong>泛型的通配符</strong>：不知道使用什么类型来接收的时候,此时可以使用<code>?</code>,<code>?表示未知通配符</code>。</p>
+<ul>
+<li>此时只能接受数据,不能往该集合中存储数据。</li>
+</ul>
+<h5 id="通配符高级使用—-受限泛型"><a href="#通配符高级使用—-受限泛型" class="headerlink" title="通配符高级使用—-受限泛型"></a>通配符高级使用—-受限泛型</h5><p>之前设置泛型的时候，实际上是可以任意设置的，只要是类就可以设置。但是在JAVA的泛型中可以指定一个泛型的<br><strong>上限</strong>和<strong>下限</strong>。</p>
+<p><strong>泛型的上限：</strong></p>
+<ul>
+<li>格式：<code>类型名称 &lt;? extends 类&gt; 对象名称</code></li>
+<li>意义：只能接收该类型及其子类</li>
+</ul>
+<p><strong>泛型的下限：</strong></p>
+<ul>
+<li>格式：<code>类型名称 &lt;? super 类&gt; 对象名称</code></li>
+<li>意义：只能接收该类型及其父类</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 泛型限定</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 作用：可以对泛型通配符?的取值范围进行限制</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * &lt;? extends A&gt;：泛型要么是A类，要么是A类的子类——上限</span></span><br><span class="line"><span class="comment"> * &lt;? super A&gt;：泛型要么是A类，要么是A类的父类——下限</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 泛型主要用于代码的重构，代码得优化。</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Sunmoon</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo02Generic</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        ArrayList&lt;Student&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        list.add(<span class="keyword">new</span> Student(<span class="string">"张三"</span>,<span class="number">18</span>));</span><br><span class="line">        list.add(<span class="keyword">new</span> Student(<span class="string">"拉拉"</span>,<span class="number">20</span>));</span><br><span class="line">        list.add(<span class="keyword">new</span> Student(<span class="string">"李四"</span>,<span class="number">30</span>));</span><br><span class="line">        list.add(<span class="keyword">new</span> Student(<span class="string">"王五"</span>,<span class="number">40</span>));</span><br><span class="line">        printArrayList(list);</span><br><span class="line"></span><br><span class="line">        ArrayList&lt;Person&gt; personList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        printArrayList(personList);</span><br><span class="line"></span><br><span class="line">        ArrayList&lt;Object&gt; objList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">// printArrayList(objList);参数集合泛型是Person的父类，报错</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 调用method方法</span></span><br><span class="line">        <span class="comment">// method(list);//参数是Person的子类，有问题</span></span><br><span class="line">        method(personList);<span class="comment">//参数是Person，没问题</span></span><br><span class="line">        method(objList);<span class="comment">//参数是Person的父类，没问题</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 定义方法，用来保存Person或者Person的子类的集合</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> list 参数集合的泛型要么是Person要么是Person的子类</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printArrayList</span><span class="params">(ArrayList&lt;? extends Person&gt; list)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//对集合进行遍历</span></span><br><span class="line">        <span class="keyword">for</span> (Person person : list) &#123;</span><br><span class="line">            System.out.println(person);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 使用泛型下限</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> list 参数集合的泛型要么是Person，要么是Person的父类</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">method</span><span class="params">(ArrayList&lt;? <span class="keyword">super</span> Person&gt; list)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>小结：<code>?</code>表示泛型通配符，如果要对?泛型通配符的取值范围进行限制，可以使用泛型限定</p>
+</blockquote>
+<h2 id="四、数据结构介绍"><a href="#四、数据结构介绍" class="headerlink" title="四、数据结构介绍"></a>四、数据结构介绍</h2><p>数据结构：存储数据的方式。如果某个容器存储数据的方式不同，那么他们的特点也不同。</p>
+<h3 id="4-1-常见的数据结构"><a href="#4-1-常见的数据结构" class="headerlink" title="4.1 常见的数据结构"></a>4.1 常见的数据结构</h3><p>常见的数据结构有：栈、队列、数组、链表和红黑树。</p>
+<h4 id="4-1-1-栈"><a href="#4-1-1-栈" class="headerlink" title="4.1.1 栈"></a>4.1.1 栈</h4><p>栈：stack，又称为堆栈</p>
+<p>举例：弹夹</p>
+<p><strong>特点：</strong></p>
+<ul>
+<li>先进后出。</li>
+<li>栈的入口和出口都是栈的顶端位置</li>
+</ul>
+<p><strong>名词解释：</strong></p>
+<ul>
+<li><p><strong>压栈</strong>：就是存元素。把元素存到栈顶，栈中其他元素依次向栈底移动一个位置</p>
+</li>
+<li><p><strong>弹栈</strong>：取元素。把栈的顶端位置元素取出，栈中其他元素一次向栈顶移动一个位置.</p>
+</li>
+</ul>
+<h4 id="4-1-2-队列"><a href="#4-1-2-队列" class="headerlink" title="4.1.2 队列"></a>4.1.2 队列</h4><p>举例：排队</p>
+<p><strong>特点：</strong></p>
+<ul>
+<li>先进先出</li>
+<li>队列的入口和出口各自占一侧。</li>
+</ul>
+<h4 id="4-1-3-数组"><a href="#4-1-3-数组" class="headerlink" title="4.1.3 数组"></a>4.1.3 数组</h4><p>特点：</p>
+<ul>
+<li>查询快：可以通过索引快速定位到元素。</li>
+<li>增删元素慢</li>
+</ul>
+<h4 id="4-1-4-链表"><a href="#4-1-4-链表" class="headerlink" title="4.1.4 链表"></a>4.1.4 链表</h4><p>链表中由很多的节点组成。每个节点都至少包含两部分内容，一部分是该系欸但保存的数据，另一部分指向下个节点的地址值。</p>
+<p>单向链表特点：</p>
+<ul>
+<li><p>多个节点之间，通过地址值连接。</p>
+</li>
+<li><p>查找元素慢：在数组中离散存储，离散存储指的是每个节点在内存中是不连续的。</p>
+</li>
+<li><p>增删元素快：对链表进行操作，只需要操作某个节点。</p>
+</li>
+</ul>
+<h3 id="4-2-树的基本结构"><a href="#4-2-树的基本结构" class="headerlink" title="4.2 树的基本结构"></a>4.2 树的基本结构</h3><p>树具有的特点：</p>
+<ul>
+<li>每一个节点有零个或者多个子节点</li>
+<li>没有父节点的节点称为根节点，一个树最多只有一个根节点</li>
+<li>每个非根节点有且只有一个父节点</li>
+</ul>
+<p><strong>名词解释</strong></p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>节点</td>
+<td>指树中的一个元素</td>
+</tr>
+<tr>
+<td>叶子的度</td>
+<td>节点拥有子树的个数，二叉树的度不大于2</td>
+</tr>
+<tr>
+<td>叶子节点</td>
+<td>度为0的节点，也称之为终端节点</td>
+</tr>
+<tr>
+<td>高度</td>
+<td>叶子节点的高度为1，叶子节点的父节点高度为2，以此类推，根节点的高度最高</td>
+</tr>
+<tr>
+<td>层</td>
+<td>根节点在第一层，以此类推</td>
+</tr>
+<tr>
+<td>父节点</td>
+<td>若一个节点含有子节点，则这个节点称之为其子节点的父节点</td>
+</tr>
+<tr>
+<td>子节点</td>
+<td>子节点是父节点的下一层节点</td>
+</tr>
+<tr>
+<td>兄弟节点</td>
+<td>拥有共同父节点的节点互称为兄弟节点</td>
+</tr>
+</tbody></table>
+<h4 id="4-2-1-二叉树"><a href="#4-2-1-二叉树" class="headerlink" title="4.2.1 二叉树"></a>4.2.1 二叉树</h4><p><strong>二叉树：</strong>树结构中的每个节点的子节点的个数不超过2，那么该树就是一个二叉树。</p>
+<p>图解：略…</p>
+<h4 id="4-2-2-二叉查找树"><a href="#4-2-2-二叉查找树" class="headerlink" title="4.2.2 二叉查找树"></a>4.2.2 二叉查找树</h4><p>图解：略…</p>
+<p><strong>特点：</strong></p>
+<ul>
+<li><p>左子树上所有的节点的值均小于它的根节点的值。</p>
+</li>
+<li><p>右子树上所有的节点的值均大于他的根节点的值</p>
+</li>
+<li><p>每一个节点最多有两个子树。</p>
+</li>
+</ul>
+<p>二叉查找树在遍历获取元素的时候可以按照【左中右】的顺序进行遍历</p>
+<blockquote>
+<p>小贴士</p>
+<ul>
+<li>二叉查找树存在的问题：会出现【瘸子】的现象，影响查找效率。</li>
+</ul>
+</blockquote>
+<h4 id="4-2-3-平衡二叉树"><a href="#4-2-3-平衡二叉树" class="headerlink" title="4.2.3 平衡二叉树"></a>4.2.3 平衡二叉树</h4><h5 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h5><p>平衡二叉树：在二叉查找树的基础上，它的左右两个子树的高度差的绝对值不超过1，并且左右两个子树都是一棵平衡二叉树。</p>
+<h5 id="旋转"><a href="#旋转" class="headerlink" title="旋转"></a>旋转</h5><p>图解：略…</p>
+<h4 id="4-2-4-红黑树"><a href="#4-2-4-红黑树" class="headerlink" title="4.2.4 红黑树"></a>4.2.4 红黑树</h4><p>图解：略…</p>
+<p>特点：</p>
+<ul>
+<li>每一个节点或是红色，或者是黑色的。</li>
+<li>根节点必须是黑色的</li>
+<li>每个叶节点(Nil)是黑色的；（如果一个节点没有子节点或者父节点，则该节点相应的指针属性值为Nil，这些Nil视为叶节点）</li>
+<li>如果某一个节点是红色，那么它的子节点必须是黑色（不能出现两个红色节点相连的情况）</li>
+<li>对每一个节点，从该节点到其所有后代叶节点的简单路径上，均包含相同数目的黑色节点。</li>
+</ul>
+<blockquote>
+<p>小贴士</p>
+<p>在进行元素插入的时候，和之前一样； 每一次插入完毕以后，使用黑色规则进行校验，如果不满足红黑规则，就需 要通过变色，左旋和右旋来调整树，使其满足红黑规则。</p>
+</blockquote>
+<h2 id="五、List接口"><a href="#五、List接口" class="headerlink" title="五、List接口"></a>五、List接口</h2><h3 id="5-1-List接口介绍"><a href="#5-1-List接口介绍" class="headerlink" title="5.1 List接口介绍"></a>5.1 List接口介绍</h3><p><code>java.util.List</code>接口继承自<code>Collection</code>接口。</p>
+<p>List接口特点：</p>
+<ul>
+<li><strong>元素有序</strong>：即是在元素的存入和取出时，顺序的一致的。例如：存入{1，23，10}，在集合中也是按照这个顺序存储的，取出也是一样的顺序。</li>
+<li><strong>带有索引</strong>：集合中元素是带有索引的，可以通过索引紧缺的操作集合中的元素(参考数组索引)。</li>
+<li><strong>可存重复元素</strong>：集合中的元素是可以重复的，可以使用equals方法来判断是否是重复元素。</li>
+</ul>
+<h3 id="5-2-List接口中的常用方法"><a href="#5-2-List接口中的常用方法" class="headerlink" title="5.2 List接口中的常用方法"></a>5.2 List接口中的常用方法</h3><p>List接口作为Collection的子接口，继承了Collention中的全部方法，还增加了一些根据元素索引操作集合的特有方法。</p>
+<ul>
+<li><p><code>public void add(int index, E element)</code>：将指定元素(element)，添加到集合中的指定位置(index)上。</p>
+</li>
+<li><p><code>public E get(int index)</code>：获取集合中指定索引位置(index)的元素，并返回。</p>
+</li>
+<li><p><code>public E remove(int index)</code>：移除集合中指定位置(index)的元素，并返回</p>
+</li>
+<li><p><code>public E set(int index, E element)</code>：用指定元素(element)替换集合中指定索引位置(index)的元素，返回值时被替换掉的元素。</p>
+</li>
+</ul>
+<h3 id="5-3-ArrayList集合"><a href="#5-3-ArrayList集合" class="headerlink" title="5.3 ArrayList集合"></a>5.3 ArrayList集合</h3><p><code>java.util.ArrayList</code>集合数据存的结构是<strong>数组结构</strong>。</p>
+<p>默认以原来数组的1.5倍进行扩容。</p>
+<p><strong>特点：</strong>元素增删慢，查找快。</p>
+<blockquote>
+<p>小贴士：</p>
+<p>由于日常开发中使用最多的功能为查询、遍历数据，所以ArrayList集合是最常用的集合。</p>
+<p>在开发中随意的使用ArrayList集合完成任何需求，这样做法并不严禁，<strong>不提倡</strong>。</p>
+</blockquote>
+<h3 id="5-4-LinkedList集合"><a href="#5-4-LinkedList集合" class="headerlink" title="5.4 LinkedList集合"></a>5.4 LinkedList集合</h3><p><code>java.util.LinkedList</code>集合数据存储的结构是<strong>链表结构</strong>。(双向链表)</p>
+<p><strong>特点：</strong>方便元素的添加、删除等操作。</p>
+<p><strong>常见方法：</strong></p>
+<ul>
+<li><code>public void addFirst(E e)</code>：将指定元素插入到集合的开头。</li>
+<li><code>public void addLast(E e)</code>：将指定元素插入到集合的末尾。</li>
+<li><code>public E getFirst()</code>：返回集合中第一个元素。</li>
+<li><code>public E getLast()</code>：返回集中的最后一个元素。</li>
+<li><code>public E removeFirst()</code>：移除并返回集合中的第一个元素。</li>
+<li><code>public E removeLast()</code>：移除并返回集合中最后一个元素。</li>
+<li><code>public E pop()</code>：从此列表表示的堆栈中弹出一个元素。(弹栈)</li>
+<li><code>public void push(E e)</code>：将元素推入此列表所表示的堆栈。(压栈)</li>
+<li><code>public boolean isEmpty</code>：判断集合是否为空，为空则返回true。</li>
+</ul>
+<p>方法演示：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo03LinkedList</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        LinkedList&lt;String&gt; list = <span class="keyword">new</span> LinkedList&lt;&gt;();</span><br><span class="line">        list.add(<span class="string">"hello"</span>);</span><br><span class="line">        list.add(<span class="string">"world"</span>);</span><br><span class="line">        list.add(<span class="string">"java"</span>);</span><br><span class="line">        System.out.println(list);</span><br><span class="line">        System.out.println(<span class="string">"================="</span>);</span><br><span class="line">        list.push(<span class="string">"php"</span>);</span><br><span class="line">        System.out.println(list);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// String pop = list.pop();</span></span><br><span class="line">        <span class="comment">// System.out.println(pop);</span></span><br><span class="line">        <span class="comment">// String s = list.removeFirst();</span></span><br><span class="line">        <span class="comment">// String s = list.removeLast();</span></span><br><span class="line">        <span class="comment">// System.out.println(s);</span></span><br><span class="line">        <span class="comment">// System.out.println(list);</span></span><br><span class="line">        <span class="comment">// list.addFirst("php");</span></span><br><span class="line">        <span class="comment">// list.addLast("php");</span></span><br><span class="line">        <span class="comment">// System.out.println(list);</span></span><br><span class="line">        <span class="comment">// String first = list.getFirst();</span></span><br><span class="line">        <span class="comment">// String last = list.getLast();</span></span><br><span class="line">        <span class="comment">// System.out.println(first);</span></span><br><span class="line">        <span class="comment">// System.out.println(last);</span></span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"==================="</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="六、集合综合案例"><a href="#六、集合综合案例" class="headerlink" title="六、集合综合案例"></a>六、集合综合案例</h2><p><strong>斗地主案例：</strong></p>
+<p>需求：</p>
+<ul>
+<li>按照斗地主的规则，完成洗牌发牌的动作。 <ul>
+<li>使用54张牌打乱顺序,三个玩家参与游戏，三人交替摸牌，每人17张牌，最后三张留作底牌。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 斗地主案例</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 步骤：</span></span><br><span class="line"><span class="comment"> *      1. 准备牌</span></span><br><span class="line"><span class="comment"> *          a.创建集合，用来保存牌</span></span><br><span class="line"><span class="comment"> *          b.向集合中添加54张牌</span></span><br><span class="line"><span class="comment"> *      2. 洗牌</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *      3. 发牌</span></span><br><span class="line"><span class="comment"> *      4. 看牌</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Sunmoon</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Game</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//准备容器——牌盒</span></span><br><span class="line">        List&lt;String&gt; poker = <span class="keyword">new</span> ArrayList&lt;String&gt;();</span><br><span class="line">        <span class="comment">//准备花色数组</span></span><br><span class="line">        String[] colors = &#123;<span class="string">"♠"</span>,<span class="string">"♥"</span>,<span class="string">"♣"</span>,<span class="string">"♦"</span>&#125;;</span><br><span class="line">        <span class="comment">//准备数字牌</span></span><br><span class="line">        String[] nums = &#123;<span class="string">"3"</span>,<span class="string">"4"</span>,<span class="string">"5"</span>,<span class="string">"6"</span>,<span class="string">"7"</span>,<span class="string">"8"</span>,<span class="string">"9"</span>,<span class="string">"10"</span>,<span class="string">"J"</span>,<span class="string">"Q"</span>,<span class="string">"K"</span>,<span class="string">"A"</span>,<span class="string">"2"</span>&#125;;</span><br><span class="line">        <span class="comment">//添加大🃏，小🃏,进入牌盒</span></span><br><span class="line">        poker.add(<span class="string">"大🃏"</span>);</span><br><span class="line">        poker.add(<span class="string">"小🃏"</span>);</span><br><span class="line">        <span class="comment">//把花色和数字组合，加入牌盒</span></span><br><span class="line">        <span class="keyword">for</span> (String color : colors) &#123;</span><br><span class="line">            <span class="keyword">for</span> (String num : nums) &#123;</span><br><span class="line">                poker.add(color+num);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//洗牌，使用Collections工具类中的shuffle()方法</span></span><br><span class="line">        Collections.shuffle(poker);</span><br><span class="line">        <span class="comment">//发牌</span></span><br><span class="line">        <span class="comment">//玩家1</span></span><br><span class="line">        ArrayList&lt;String&gt; playerOne = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//玩家2</span></span><br><span class="line">        ArrayList&lt;String&gt; playerTwo = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//玩家3</span></span><br><span class="line">        ArrayList&lt;String&gt; playerThree = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//底牌</span></span><br><span class="line">        ArrayList&lt;String&gt; bottomCard = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//普通for循环遍历牌盒集合，把对应的牌加入对应玩家的集合中</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; poker.size(); i++) &#123;</span><br><span class="line">            <span class="comment">//先判断是否是最后三张牌，是则加入底牌集合</span></span><br><span class="line">            <span class="keyword">if</span> (i &gt;= poker.size() - <span class="number">3</span>)&#123;</span><br><span class="line">                bottomCard.add(poker.get(i));</span><br><span class="line">                <span class="comment">//是则跳过本次循环，不执行下面发牌动作了</span></span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//发牌时，第一个人拿的到牌的索引为0，3，6，...&#125;第二个人拿到牌的索引&#123;1，4，7，...&#125;,第三个人拿到牌的索引&#123;2，5，8，...&#125;</span></span><br><span class="line">            <span class="comment">//可以看出以下结论</span></span><br><span class="line">            <span class="comment">//判断索引对3取余等于0就给第一个人发牌</span></span><br><span class="line">            <span class="keyword">if</span> (i % <span class="number">3</span> == <span class="number">0</span>)&#123;</span><br><span class="line">                playerOne.add(poker.get(i));</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (i % <span class="number">3</span> == <span class="number">1</span>)&#123;</span><br><span class="line">                <span class="comment">//对3取余等于1则给第二个人发牌</span></span><br><span class="line">                playerTwo.add(poker.get(i));</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">//此处意思是对3取余等于2则给第三个人发牌</span></span><br><span class="line">                playerThree.add(poker.get(i));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//看牌</span></span><br><span class="line">        lookCard(<span class="string">"张三"</span>,playerOne);</span><br><span class="line">        lookCard(<span class="string">"李四"</span>,playerTwo);</span><br><span class="line">        lookCard(<span class="string">"王五"</span>,playerThree);</span><br><span class="line">        lookCard(<span class="string">"底牌"</span>,bottomCard);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 查看牌面</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> name 玩家姓名</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> list 玩家牌面</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">lookCard</span><span class="params">(String name, ArrayList&lt;String&gt; list)</span> </span>&#123;</span><br><span class="line">        System.out.print(<span class="string">"【"</span>+name + <span class="string">"】牌面："</span>);</span><br><span class="line">        <span class="keyword">for</span> (String card : list) &#123;</span><br><span class="line">            System.out.print(card + <span class="string">" "</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+      <tags>
+        <tag>基础</tag>
+        <tag>学习</tag>
+        <tag>集合</tag>
+        <tag>泛型</tag>
+        <tag>数据结构</tag>
+      </tags>
+  </entry>
 </search>
