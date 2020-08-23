@@ -219,7 +219,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">26</span>
+          <span class="site-state-item-count">27</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -232,7 +232,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">46</span>
+        <span class="site-state-item-count">48</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -469,7 +469,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://sunmoon.com/2020/08/20/jQuery/">
+    <link itemprop="mainEntityOfPage" href="http://sunmoon.com/2020/08/19/Json-AJAX%E5%85%A5%E9%97%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/sunmoon.jpg">
@@ -483,7 +483,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2020/08/20/jQuery/" class="post-title-link" itemprop="url">jQuery</a>
+            <a href="/2020/08/19/Json-AJAX%E5%85%A5%E9%97%A8/" class="post-title-link" itemprop="url">Json&AJAX入门</a>
         </h2>
 
         <div class="post-meta">
@@ -493,14 +493,111 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-08-20 21:35:00" itemprop="dateCreated datePublished" datetime="2020-08-20T21:35:00+08:00">2020-08-20</time>
+              <time title="创建时间：2020-08-19 22:30:50" itemprop="dateCreated datePublished" datetime="2020-08-19T22:30:50+08:00">2020-08-19</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-22 21:36:48" itemprop="dateModified" datetime="2020-08-22T21:36:48+08:00">2020-08-22</time>
+                <time title="修改时间：2020-08-23 22:33:31" itemprop="dateModified" datetime="2020-08-23T22:33:31+08:00">2020-08-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/JavaWeb/" itemprop="url" rel="index"><span itemprop="name">JavaWeb</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、Json"><a href="#一、Json" class="headerlink" title="一、Json"></a>一、Json</h2><h3 id="1-1-Json概述"><a href="#1-1-Json概述" class="headerlink" title="1.1 Json概述"></a>1.1 Json概述</h3><p>JavaScript对象表示形式（JavaScript Object Notation）</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">java对象表示形式:</span><br><span class="line"><span class="code">    User user = new User();</span></span><br><span class="line"><span class="code">    user.setUsername("后羿");</span></span><br><span class="line"><span class="code">    user.setAge(23);</span></span><br><span class="line"><span class="code">    user.setSex("男");</span></span><br><span class="line"><span class="code">			</span></span><br><span class="line">javaScript对象表示形式:</span><br><span class="line"><span class="code">    let user = &#123;"username":"后羿","age":18,"sex":"男"&#125;;</span></span><br><span class="line"><span class="code">        取值：user.username</span></span><br><span class="line"><span class="code">        赋值：user.username="安其拉";</span></span><br><span class="line"><span class="code">    let product = &#123;&#125;;</span></span><br><span class="line"><span class="code">    let car = &#123;&#125;;</span></span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/08/19/Json-AJAX%E5%85%A5%E9%97%A8/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://sunmoon.com/2020/08/19/jQuery/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/sunmoon.jpg">
+      <meta itemprop="name" content="Sunmoon">
+      <meta itemprop="description" content="阴晴雨雪，月圆月缺">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="清风的博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/08/19/jQuery/" class="post-title-link" itemprop="url">jQuery</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-19 21:35:00" itemprop="dateCreated datePublished" datetime="2020-08-19T21:35:00+08:00">2020-08-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-23 22:34:21" itemprop="dateModified" datetime="2020-08-23T22:34:21+08:00">2020-08-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -541,7 +638,7 @@
 <p>特别值得一提的是基于jQuery平台的插件非常丰富，大多数前端业务场景都有其封装好的工具可直接使用。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/08/20/jQuery/#more" rel="contents">
+              <a class="btn" href="/2020/08/19/jQuery/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1154,105 +1251,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://sunmoon.com/2020/08/09/NIO-AIO/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/sunmoon.jpg">
-      <meta itemprop="name" content="Sunmoon">
-      <meta itemprop="description" content="阴晴雨雪，月圆月缺">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="清风的博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/08/09/NIO-AIO/" class="post-title-link" itemprop="url">NIO&AIO</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2020-08-09 16:09:36 / 修改时间：16:10:58" itemprop="dateCreated datePublished" datetime="2020-08-09T16:09:36+08:00">2020-08-09</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>15k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>14 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="NIO"><a href="#NIO" class="headerlink" title="NIO"></a>NIO</h2><h3 id="NIO介绍"><a href="#NIO介绍" class="headerlink" title="NIO介绍"></a>NIO介绍</h3><p>同步和异步（线程通信的机制）</p>
-<ul>
-<li>同步：线程在完成某个功能时，必须等待这个功能执行完才能再继续往下执行。</li>
-<li>异步：线程在完成功能的时候，不用等到该功能执行结束也可以去做其他事情。 得到该功能结束后，系统会通知线程该功能执行完了</li>
-</ul>
-<p>阻塞和非阻塞(线程的状态)</p>
-<ul>
-<li>阻塞：线程在执行任务时，会挂起。</li>
-<li>非阻塞：线程在执行任务时，不会挂起，可以继续执行其他任务。</li>
-</ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/08/09/NIO-AIO/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1308,13 +1306,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">298k</span>
+    <span title="站点总字数">302k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">4:31</span>
+    <span title="站点阅读时长">4:35</span>
 </div>
 
 
