@@ -738,6 +738,7 @@
         <tag>学习</tag>
         <tag>面向对象</tag>
         <tag>设计模式</tag>
+        <tag>模板设计模式</tag>
       </tags>
   </entry>
   <entry>
@@ -3872,7 +3873,7 @@
 
 
 
-<h2 id="八、装饰设计模式"><a href="#八、装饰设计模式" class="headerlink" title="八、装饰设计模式"></a>八、装饰设计模式</h2><p><strong>装饰者设计模式：在不改变原有类，并且不适用继承的前提下，对一个类进行增强。</strong></p>
+<h2 id="八、装饰设计模式"><a href="#八、装饰设计模式" class="headerlink" title="八、装饰设计模式"></a>八、装饰设计模式</h2><p><strong>装饰器设计模式：在不改变原有类，并且不适用继承的前提下，对一个类进行增强。</strong></p>
 <ul>
 <li>装饰的类和被装饰的类要实现一个接口</li>
 <li>在装饰的类中接收被装饰的对象</li>
@@ -3930,6 +3931,7 @@
         <tag>学习</tag>
         <tag>IO流</tag>
         <tag>设计模式</tag>
+        <tag>装饰器模式</tag>
       </tags>
   </entry>
   <entry>
@@ -8379,6 +8381,7 @@
       </categories>
       <tags>
         <tag>学习</tag>
+        <tag>设计模式</tag>
         <tag>Listener</tag>
         <tag>Filter</tag>
         <tag>装饰器模式</tag>
