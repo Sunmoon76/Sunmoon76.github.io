@@ -10987,8 +10987,8 @@
 
 <h3 id="2-3-Mybatis注解多表操作"><a href="#2-3-Mybatis注解多表操作" class="headerlink" title="2.3 Mybatis注解多表操作"></a>2.3 Mybatis注解多表操作</h3><p>之前我们在映射文件中通过配置<code>&lt;resultMap&gt;、&lt;association&gt;、&lt;collection&gt;</code>来实现复杂关系映射。</p>
 <p>使用注解开发后，我们可以使用<code>@Results、@Result，@One、@Many</code>注解组合完成复杂关系的配置。</p>
-<p>![mybatis注解开发_多表查询相关注解 (1)](/img/mybatis注解开发_多表查询相关注解 (1).png)</p>
-<p>![mybatis注解开发_多表查询相关注解 (2)](/img/mybatis注解开发_多表查询相关注解 (2).png)</p>
+<p><img data-src="/img/%E5%A4%9A%E8%A1%A8%E6%9F%A5%E8%AF%A2%E7%9B%B8%E5%85%B3%E6%B3%A8%E8%A7%A31.png" alt="多表查询相关注解1"></p>
+<p><img data-src="/img/%E5%A4%9A%E8%A1%A8%E6%9F%A5%E8%AF%A2%E7%9B%B8%E5%85%B3%E6%B3%A8%E8%A7%A32.png" alt="多表查询相关注解2"></p>
 <h4 id="2-3-1-一对一查询基于注解开发"><a href="#2-3-1-一对一查询基于注解开发" class="headerlink" title="2.3.1 一对一查询基于注解开发"></a>2.3.1 一对一查询基于注解开发</h4><blockquote>
 <p>需求：查询一个订单，与此同时查询出该订单所属的用户</p>
 </blockquote>
@@ -11141,11 +11141,11 @@
 <h4 id="4-1-2-IDEA配置Lombok插件支持"><a href="#4-1-2-IDEA配置Lombok插件支持" class="headerlink" title="4.1.2 IDEA配置Lombok插件支持"></a>4.1.2 IDEA配置Lombok插件支持</h4><ul>
 <li>在设置setting 中找到plugins。在检索框中检索lombok：</li>
 </ul>
-<p>![Lombok插件安装 (1)](/img/Lombok插件安装 (1).png)</p>
+<p><img data-src="/img/Lombok%E6%8F%92%E4%BB%B6%E5%AE%89%E8%A3%851.png" alt="Lombok插件安装1"></p>
 <ul>
 <li>在setting中找到下图界面，在右侧红框出打钩：</li>
 </ul>
-<p>![Lombok插件安装 (2)](/img/Lombok插件安装 (2).png)</p>
+<p><img data-src="/img/Lombok%E6%8F%92%E4%BB%B6%E5%AE%89%E8%A3%852.png" alt="Lombok插件安装2"></p>
 <ul>
 <li>重启idea，大功告成</li>
 </ul>
