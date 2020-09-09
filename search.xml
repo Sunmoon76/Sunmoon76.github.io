@@ -10907,4 +10907,280 @@
         <tag>加载策略</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Mybatis注解开发&amp;分页查询</title>
+    <url>/2020/09/09/Mybatis%E6%B3%A8%E8%A7%A3%E5%BC%80%E5%8F%91-%E5%88%86%E9%A1%B5%E6%9F%A5%E8%AF%A2/</url>
+    <content><![CDATA[<h2 id="一-核心配置文件总结"><a href="#一-核心配置文件总结" class="headerlink" title="一  核心配置文件总结"></a>一  核心配置文件总结</h2><p><strong>SqlMapConfig.xml 中配置的内容和顺序如下：</strong>  </p>
+<ul>
+<li>properties（属性）</li>
+<li>settings（全局配置参数）</li>
+<li>typeAliases（类型别名）</li>
+<li>typeHandlers（类型处理器）</li>
+<li>objectFactory（对象工厂）</li>
+<li>plugins（插件）</li>
+<li>environments（数据库环境配置）<ul>
+<li>environment（数据库环境子属性对象）<ul>
+<li>transactionManager（事务管理）</li>
+<li>dataSource（数据源）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>mappers（映射器）</li>
+</ul>
+<a id="more"></a>
+
+<h3 id="1-1-properties标签"><a href="#1-1-properties标签" class="headerlink" title="1.1 properties标签"></a>1.1 properties标签</h3><blockquote>
+<p>加载外部的properties文件</p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">properties</span> <span class="attr">resource</span>=<span class="string">"jdbc.properties"</span>&gt;</span><span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="1-2-settings标签"><a href="#1-2-settings标签" class="headerlink" title="1.2 settings标签"></a>1.2 settings标签</h3><blockquote>
+<p>全局参数配置</p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">settings</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--开启懒加载--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">setting</span> <span class="attr">name</span>=<span class="string">"lazyLoadingEnabled"</span> <span class="attr">value</span>=<span class="string">"true"</span>/&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 指定触发延迟加载的方法 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">setting</span> <span class="attr">name</span>=<span class="string">"lazyLoadTriggerMethods"</span> <span class="attr">value</span>=<span class="string">""</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">settings</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="1-3-typeAliases标签"><a href="#1-3-typeAliases标签" class="headerlink" title="1.3 typeAliases标签"></a>1.3 typeAliases标签</h3><blockquote>
+<p>为 Java 类型设置一个别名</p>
+</blockquote>
+<figure class="highlight markdown"><table><tr><td class="code"><pre><span class="line"><span class="bullet">1. </span>单个定义别名（了解）</span><br><span class="line"></span><br><span class="line"><span class="code">    &lt;typeAliases&gt;</span></span><br><span class="line"><span class="code">        &lt;typeAlias type="com.xxx.domain.User" alias="user"&gt;&lt;/typeAlias&gt;</span></span><br><span class="line"><span class="code">    &lt;/typeAliases&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">1. </span>使用包的形式批量定义别名</span><br><span class="line"></span><br><span class="line"><span class="code">    &lt;typeAliases&gt;</span></span><br><span class="line"><span class="code">        &lt;package name="com.xxx.domain"&gt;&lt;/package&gt;</span></span><br><span class="line"><span class="code">    &lt;/typeAliases&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="1-4-mappers标签"><a href="#1-4-mappers标签" class="headerlink" title="1.4 mappers标签"></a>1.4 mappers标签</h3><blockquote>
+<p>加载映射配置</p>
+</blockquote>
+<figure class="highlight markdown"><table><tr><td class="code"><pre><span class="line"><span class="bullet">1. </span>加载指定的src目录下的映射文件，例如：</span><br><span class="line"></span><br><span class="line"><span class="code">	&lt;mapper resource="com/xxx/mapper/UserMapper.xml"/&gt;</span></span><br><span class="line"><span class="code">	</span></span><br><span class="line"><span class="bullet">2. </span>加载指定包目录下的映射接口，例如：</span><br><span class="line"></span><br><span class="line"><span class="code">	&lt;mapper class="com.xxx.mapper.UserMapper"/&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">3. </span>加载并扫描指定包下所有的映射文件（接口），例如：</span><br><span class="line"></span><br><span class="line"><span class="code">    &lt;!--配置映射文件--&gt;</span></span><br><span class="line"><span class="code">    &lt;mappers&gt;</span></span><br><span class="line"><span class="code">       &lt;!-- &lt;mapper resource="com/itheima/mapper/UserMapper.xml"&gt;&lt;/mapper&gt;--&gt;</span></span><br><span class="line"><span class="code">        &lt;!--使用扫描包的方式有一个前置条件，映射文件命名必须跟映射接口一致，且在同一包下--&gt;</span></span><br><span class="line"><span class="code">        &lt;package name="com.xxx.mapper"&gt;&lt;/package&gt;</span></span><br><span class="line"><span class="code">    &lt;/mappers&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="1-5-environments标签"><a href="#1-5-environments标签" class="headerlink" title="1.5 environments标签"></a>1.5 environments标签</h3><blockquote>
+<p>数据源环境配置</p>
+</blockquote>
+<figure class="highlight markdown"><table><tr><td class="code"><pre><span class="line"><span class="xml"><span class="tag">&lt;<span class="name">environments</span> <span class="attr">default</span>=<span class="string">"mysql"</span>&gt;</span></span></span><br><span class="line"><span class="code">    &lt;environment id="mysql"&gt;</span></span><br><span class="line"><span class="code">    	&lt;!--事务管理器：使用JDBC--&gt;</span></span><br><span class="line"><span class="code">        &lt;transactionManager type="JDBC"/&gt;</span></span><br><span class="line"><span class="code">        &lt;!--数据源：使用内置连接池--&gt;</span></span><br><span class="line"><span class="code">        &lt;dataSource type="POOLED"&gt;</span></span><br><span class="line"><span class="code">            &lt;property name="driver" value="$&#123;jdbc.driver&#125;"/&gt;</span></span><br><span class="line"><span class="code">            &lt;property name="url" value="$&#123;jdbc.url&#125;"/&gt;</span></span><br><span class="line"><span class="code">            &lt;property name="username" value="$&#123;jdbc.username&#125;"/&gt;</span></span><br><span class="line"><span class="code">            &lt;property name="password" value="$&#123;jdbc.password&#125;"/&gt;</span></span><br><span class="line"><span class="code">        &lt;/dataSource&gt;</span></span><br><span class="line"><span class="code">    &lt;/environment&gt;</span></span><br><span class="line"><span class="xml"><span class="tag">&lt;/<span class="name">environments</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight markdown"><table><tr><td class="code"><pre><span class="line"><span class="bullet">1. </span>其中，事务管理器（transactionManager）类型有两种：</span><br><span class="line"><span class="bullet">	* </span>JDBC：</span><br><span class="line"><span class="code">		这个配置就是直接使用了JDBC 的提交和回滚设置，它依赖于从数据源得到的连接来管理事务作用域。</span></span><br><span class="line"><span class="code">		</span></span><br><span class="line"><span class="bullet">	* </span>MANAGED：</span><br><span class="line"><span class="code">		这个配置几乎没做什么。它从来不提交或回滚一个连接，而是让容器来管理事务的整个生命周期。</span></span><br><span class="line"><span class="code">		例如：mybatis与spring整合后，事务交给spring容器管理。</span></span><br><span class="line"><span class="code">	</span></span><br><span class="line"><span class="bullet">2. </span>其中，数据源（dataSource）常用类型有二种：</span><br><span class="line"><span class="bullet">	* </span>UNPOOLED：</span><br><span class="line"><span class="code">		这个数据源的实现只是每次被请求时打开和关闭连接。</span></span><br><span class="line"><span class="code">		</span></span><br><span class="line"><span class="bullet">	* </span>POOLED：</span><br><span class="line"><span class="code">		这种数据源的实现利用“池”的概念将 JDBC 连接对象组织起来。</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="二、Mybatis注解"><a href="#二、Mybatis注解" class="headerlink" title="二、Mybatis注解"></a>二、Mybatis注解</h2><p>近年来注解开发越来越流行，Mybatis也可以使用注解开发方式，这样我们就可以减少编写Mapper映射文件了。我们先围绕一些基本的CRUD来学习，再学习复杂映射多表操作。</p>
+<h3 id="2-1-Mybatis常用注解"><a href="#2-1-Mybatis常用注解" class="headerlink" title="2.1 Mybatis常用注解"></a>2.1 Mybatis常用注解</h3><figure class="highlight markdown"><table><tr><td class="code"><pre><span class="line"><span class="bullet">* </span>@Insert：实现新增，代替了<span class="xml"><span class="tag">&lt;<span class="name">insert</span>&gt;</span></span><span class="xml"><span class="tag">&lt;/<span class="name">insert</span>&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="bullet">* </span>@Update：实现更新，代替了<span class="xml"><span class="tag">&lt;<span class="name">update</span>&gt;</span></span><span class="xml"><span class="tag">&lt;/<span class="name">update</span>&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="bullet">* </span>@Delete：实现删除，代替了<span class="xml"><span class="tag">&lt;<span class="name">delete</span>&gt;</span></span><span class="xml"><span class="tag">&lt;/<span class="name">delete</span>&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="bullet">* </span>@Select：实现查询，代替了<span class="xml"><span class="tag">&lt;<span class="name">select</span>&gt;</span></span><span class="xml"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="bullet">* </span>@Result：实现结果集封装，代替了<span class="xml"><span class="tag">&lt;<span class="name">result</span>&gt;</span></span><span class="xml"><span class="tag">&lt;/<span class="name">result</span>&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="bullet">* </span>@Results：可以与@Result 一起使用，封装多个结果集，代替了<span class="xml"><span class="tag">&lt;<span class="name">resultMap</span>&gt;</span></span><span class="xml"><span class="tag">&lt;/<span class="name">resultMap</span>&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="bullet">* </span>@One：实现一对一结果集封装，代替了<span class="xml"><span class="tag">&lt;<span class="name">association</span>&gt;</span></span><span class="xml"><span class="tag">&lt;/<span class="name">association</span>&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="bullet">* </span>@Many：实现一对多结果集封装，代替了<span class="xml"><span class="tag">&lt;<span class="name">collection</span>&gt;</span></span><span class="xml"><span class="tag">&lt;/<span class="name">collection</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-2-Mybatis注解单表操作"><a href="#2-2-Mybatis注解单表操作" class="headerlink" title="2.2 Mybatis注解单表操作"></a>2.2 Mybatis注解单表操作</h3><p><strong>代码示例：</strong></p>
+<ul>
+<li>UserMapper接口</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserMapper</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Select</span>(<span class="string">"select * from user where id = #&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">findById</span><span class="params">(Integer id)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Select</span>(<span class="string">"select id as uid ,username as uname,birthday as bir , sex as gender ,address as addr from user"</span>)</span><br><span class="line">    <span class="meta">@Results</span>(&#123;</span><br><span class="line">            <span class="meta">@Result</span>(column = <span class="string">"uid"</span>, property = <span class="string">"id"</span>, id = <span class="keyword">true</span>),  <span class="comment">// 相当于&lt;id&gt;&lt;/id&gt;</span></span><br><span class="line">            <span class="meta">@Result</span>(column = <span class="string">"uname"</span>, property = <span class="string">"username"</span>), <span class="comment">// 相当于&lt;result&gt;&lt;/result&gt;</span></span><br><span class="line">            <span class="meta">@Result</span>(column = <span class="string">"bir"</span>, property = <span class="string">"birthday"</span>),</span><br><span class="line">            <span class="meta">@Result</span>(column = <span class="string">"gender"</span>, property = <span class="string">"sex"</span>),</span><br><span class="line">            <span class="meta">@Result</span>(column = <span class="string">"addr"</span>, property = <span class="string">"address"</span>)</span><br><span class="line">    &#125;) <span class="comment">// 相当于&lt;resultMap&gt;&lt;/resultMap&gt;</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> List&lt;User&gt; <span class="title">findAll</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Insert</span>(<span class="string">"insert into user values(null,#&#123;username&#125;,#&#123;birthday&#125;,#&#123;sex&#125;,#&#123;address&#125;)"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">save</span><span class="params">(User user)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Update</span>(<span class="string">"update user set username = #&#123;username&#125;,sex = #&#123;sex&#125;,address = #&#123;address&#125;,birthday= #&#123;birthday&#125; where id = #&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">update</span><span class="params">(User user)</span></span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Delete</span>(<span class="string">"delete from user where id = #&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">delete</span><span class="params">(Integer id)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>测试</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserMapperTest</span> <span class="keyword">extends</span> <span class="title">BaseMapperTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test01</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="comment">// 获取代理对象</span></span><br><span class="line">        UserMapper userMapper = sqlSession.getMapper(UserMapper<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        <span class="comment">// 查询单个</span></span><br><span class="line">       <span class="comment">/* User user = userMapper.findById(41);</span></span><br><span class="line"><span class="comment">        System.out.println(user);*/</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 查询所有</span></span><br><span class="line">       <span class="comment">/* List&lt;User&gt; list = userMapper.findAll();</span></span><br><span class="line"><span class="comment">        for (User user : list) &#123;</span></span><br><span class="line"><span class="comment">            System.out.println(user);</span></span><br><span class="line"><span class="comment">        &#125;*/</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 添加</span></span><br><span class="line">       <span class="comment">/* User user = new User();</span></span><br><span class="line"><span class="comment">        user.setUsername("印度小啊三");</span></span><br><span class="line"><span class="comment">        user.setAddress("恒河");</span></span><br><span class="line"><span class="comment">        user.setBirthday(new Date());</span></span><br><span class="line"><span class="comment">        user.setSex("不详");</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">        userMapper.save(user);*/</span></span><br><span class="line"></span><br><span class="line">       <span class="comment">// 修改</span></span><br><span class="line">        <span class="comment">/*User user = new User();</span></span><br><span class="line"><span class="comment">        user.setId(58);</span></span><br><span class="line"><span class="comment">        user.setUsername("印度啊三");</span></span><br><span class="line"><span class="comment">        user.setAddress("恒河");</span></span><br><span class="line"><span class="comment">        user.setBirthday(new Date());</span></span><br><span class="line"><span class="comment">        user.setSex("男");</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">        userMapper.update(user);*/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 删除</span></span><br><span class="line">        userMapper.delete(<span class="number">58</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-3-Mybatis注解多表操作"><a href="#2-3-Mybatis注解多表操作" class="headerlink" title="2.3 Mybatis注解多表操作"></a>2.3 Mybatis注解多表操作</h3><p>之前我们在映射文件中通过配置<code>&lt;resultMap&gt;、&lt;association&gt;、&lt;collection&gt;</code>来实现复杂关系映射。</p>
+<p>使用注解开发后，我们可以使用<code>@Results、@Result，@One、@Many</code>注解组合完成复杂关系的配置。</p>
+<p>![mybatis注解开发_多表查询相关注解 (1)](/img/mybatis注解开发_多表查询相关注解 (1).png)</p>
+<p>![mybatis注解开发_多表查询相关注解 (2)](/img/mybatis注解开发_多表查询相关注解 (2).png)</p>
+<h4 id="2-3-1-一对一查询基于注解开发"><a href="#2-3-1-一对一查询基于注解开发" class="headerlink" title="2.3.1 一对一查询基于注解开发"></a>2.3.1 一对一查询基于注解开发</h4><blockquote>
+<p>需求：查询一个订单，与此同时查询出该订单所属的用户</p>
+</blockquote>
+<p><strong>一对一查询语句</strong></p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> orders <span class="keyword">where</span> <span class="keyword">id</span> = <span class="comment">#&#123;id&#125;;</span></span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> <span class="string">`user`</span> <span class="keyword">WHERE</span> <span class="keyword">id</span> = <span class="comment">#&#123;订单的uid&#125;;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li>OrderMapper接口</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">OrderMapper</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 一对一关系查询</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Select</span>(<span class="string">"select * from orders where id = #&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function">Order <span class="title">findById</span><span class="params">(Integer id)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li>UserMapper接口</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 查询用户信息及其下属的订单信息角色信息</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> id</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Select</span>(<span class="string">"select * from user where id = #&#123;id&#125;"</span>)</span><br><span class="line"><span class="function">User <span class="title">findById</span><span class="params">(Integer id)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>注解嵌套</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">OrderMapper</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 一对一关系查询</span></span><br><span class="line"><span class="comment">     * 查询订单id及所属用户</span></span><br><span class="line"><span class="comment">     * 根据订单id查询订单</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> id</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Select</span>(<span class="string">"select * from orders where id = #&#123;id&#125;"</span>)</span><br><span class="line">    <span class="meta">@Results</span>(&#123;</span><br><span class="line">            <span class="meta">@Result</span>(column = <span class="string">"id"</span>,property = <span class="string">"id"</span>,id = <span class="keyword">true</span>),</span><br><span class="line">            <span class="meta">@Result</span>(column = <span class="string">"ordertime"</span>,property = <span class="string">"ordertime"</span>),</span><br><span class="line">            <span class="meta">@Result</span>(column = <span class="string">"money"</span>,property = <span class="string">"money"</span>),</span><br><span class="line">        <span class="comment">// 一对一关系</span></span><br><span class="line">            <span class="meta">@Result</span>(property = <span class="string">"user"</span>,column = <span class="string">"uid"</span>,one = <span class="meta">@One</span>(select = <span class="string">"com.xxx.mapper.UserMapper.findById"</span>))</span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="function">Order <span class="title">findById</span><span class="params">(Integer id)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>测试</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test01</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//工具类获取sqlSession对象</span></span><br><span class="line">    SqlSession sqlSession = MybatisUtils.openSession();</span><br><span class="line">    </span><br><span class="line">    OrderMapper mapper = sqlSession.getMapper(OrderMapper<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    Order order = mapper.findById(<span class="number">1</span>);</span><br><span class="line">    System.out.println(order);</span><br><span class="line">    <span class="comment">//工具类释放资源</span></span><br><span class="line">    MybatisUtils.releases(sqlSession);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="2-3-2-一对多基于注解开发"><a href="#2-3-2-一对多基于注解开发" class="headerlink" title="2.3.2 一对多基于注解开发"></a>2.3.2 一对多基于注解开发</h4><blockquote>
+<p>需求：查询一个用户，与此同时查询出该用户具有的订单</p>
+</blockquote>
+<p><strong>一对多查询语句</strong></p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> <span class="string">`user`</span> <span class="keyword">where</span> <span class="keyword">id</span> = <span class="comment">#&#123;id&#125;;</span></span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> orders <span class="keyword">where</span> uid = <span class="comment">#&#123;用户id&#125;;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>UserMapper接口</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 一对多嵌套查询</span></span><br><span class="line"><span class="meta">@Select</span>(<span class="string">"SELECT * FROM `user` WHERE id = #&#123;id&#125;"</span>)</span><br><span class="line"><span class="meta">@Results</span>(&#123;</span><br><span class="line">    <span class="meta">@Result</span>(column = <span class="string">"id"</span>,property = <span class="string">"id"</span>,id=<span class="keyword">true</span>),</span><br><span class="line">    <span class="meta">@Result</span>(column = <span class="string">"birthday"</span>,property =<span class="string">"birthday"</span> ),</span><br><span class="line">    <span class="meta">@Result</span>(column = <span class="string">"sex"</span>,property =<span class="string">"sex"</span> ),</span><br><span class="line">    <span class="meta">@Result</span>(column = <span class="string">"username"</span>,property =<span class="string">"username"</span> ),</span><br><span class="line">    <span class="meta">@Result</span>(column = <span class="string">"address"</span>,property =<span class="string">"address"</span> ),</span><br><span class="line">    <span class="comment">// &lt;collection property="orderList" column="id" select="com.xxx.mapper.OrderMapper.findByUid"&gt;&lt;/collection&gt;</span></span><br><span class="line">    <span class="meta">@Result</span>(property = <span class="string">"orderList"</span>,column = <span class="string">"id"</span>,many = <span class="meta">@Many</span>(select = <span class="string">"com.xxx.mapper.OrderMapper.findByUid"</span>))</span><br><span class="line">&#125;)</span><br><span class="line"><span class="function"><span class="keyword">public</span> User <span class="title">findByIdWithOrderList</span><span class="params">(Integer id)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>测试</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 一对多测试</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test01</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    <span class="comment">//工具类获取sqlSession对象</span></span><br><span class="line">    SqlSession sqlSession = MybatisUtils.openSession();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 创建代理对象</span></span><br><span class="line">    UserMapper userMapper = sqlSession.getMapper(UserMapper<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    <span class="comment">// 根据用户id查询</span></span><br><span class="line">    User user = userMapper.findByIdWithOrderList(<span class="number">41</span>);</span><br><span class="line">    System.out.println(user.getOrderList());</span><br><span class="line">    System.out.println(user);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//工具类释放资源</span></span><br><span class="line">    MybatisUtils.releases(sqlSession);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="2-3-3-多对多基于注解开发"><a href="#2-3-3-多对多基于注解开发" class="headerlink" title="2.3.3 多对多基于注解开发"></a>2.3.3 多对多基于注解开发</h4><blockquote>
+<p>需求：查询一个用户，与此同时查询该用户所具有的角色列表</p>
+</blockquote>
+<p><strong>sql语句</strong></p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> <span class="keyword">user</span> <span class="keyword">where</span> <span class="keyword">id</span> = <span class="comment">#&#123;id&#125;</span></span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> <span class="keyword">role</span> r <span class="keyword">INNER</span> <span class="keyword">JOIN</span> user_role ur <span class="keyword">ON</span> r.id = ur.rid <span class="keyword">WHERE</span> uid = <span class="comment">#&#123;用户id&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>代码示例</p>
+<ul>
+<li>UserMapper接口</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Select</span>(<span class="string">"select * from user where id = #&#123;id&#125;"</span>)</span><br><span class="line"><span class="meta">@Results</span>(&#123;</span><br><span class="line">    <span class="meta">@Result</span>(column = <span class="string">"id"</span>,property = <span class="string">"id"</span>,id = <span class="keyword">true</span>),</span><br><span class="line">    <span class="meta">@Result</span>(column = <span class="string">"username"</span>, property = <span class="string">"username"</span>),</span><br><span class="line">    <span class="meta">@Result</span>(column = <span class="string">"birthday"</span>, property = <span class="string">"birthday"</span>),</span><br><span class="line">    <span class="meta">@Result</span>(column = <span class="string">"sex"</span>, property = <span class="string">"sex"</span>),</span><br><span class="line">    <span class="meta">@Result</span>(column = <span class="string">"address"</span>, property = <span class="string">"address"</span>),</span><br><span class="line">    <span class="meta">@Result</span>(property = <span class="string">"orderList"</span>, column = <span class="string">"id"</span>, many = <span class="meta">@Many</span>(select = <span class="string">"com.xxx.mapper.OrderMapper.findByUid"</span>)),</span><br><span class="line">    <span class="meta">@Result</span>(property = <span class="string">"roleList"</span>, column = <span class="string">"id"</span>, many = <span class="meta">@Many</span>(select = <span class="string">"com.xxx.mapper.RoleMapper.findByUid"</span>))</span><br><span class="line">&#125;)</span><br><span class="line"><span class="function">User <span class="title">findById</span><span class="params">(Integer id)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>RoleMapper接口</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 根据用户id查询角色信息</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> uid 用户id</span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> 角色列表</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Select</span>(<span class="string">"SELECT * FROM role r INNER JOIN user_role ur ON r.id = ur.rid WHERE uid = #&#123;uid&#125;"</span>)</span><br><span class="line"><span class="function">List&lt;Role&gt; <span class="title">findByUid</span><span class="params">(Integer uid)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>测试</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 多对多(一对多)关系查询</span></span><br><span class="line"><span class="comment">     * 查询用户及其角色信息</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test01</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//工具类获取sqlSession对象</span></span><br><span class="line">    SqlSession sqlSession = MybatisUtils.openSession();</span><br><span class="line">   </span><br><span class="line">    UserMapper mapper = sqlSession.getMapper(UserMapper<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    User user = mapper.findById(<span class="number">41</span>);</span><br><span class="line">    System.out.println(user.getRoleList());</span><br><span class="line">    System.out.println(user);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//工具类释放资源</span></span><br><span class="line">    MybatisUtils.releases(sqlSession);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-4-注解配置延迟加载"><a href="#2-4-注解配置延迟加载" class="headerlink" title="2.4 注解配置延迟加载"></a>2.4 注解配置延迟加载</h3><blockquote>
+<p>不管是一对一、一对多还是多对多 ，在注解配置中都有fetchType的属性</p>
+</blockquote>
+<p>在<code>@One</code>和<code>@Many</code>注解中都提供了一个属性，<code>fetchType</code>，是一个枚举类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> FetchType &#123;</span><br><span class="line">    LAZY,</span><br><span class="line">    EAGER,</span><br><span class="line">    DEFAULT;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">FetchType</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>三种取值分别的含义是：</p>
+<ul>
+<li><code>fetchType = FetchType.LAZY</code>：表示懒加载</li>
+<li><code>fetchType = FetchType.EAGER</code>：表示立即加载</li>
+<li><code>fetchType = FetchType.DEFAULT</code>：表示使用全局配置</li>
+</ul>
+<p>代码示例：</p>
+<h3 id="2-5-二级缓存"><a href="#2-5-二级缓存" class="headerlink" title="2.5 二级缓存"></a>2.5 二级缓存</h3><blockquote>
+<p>在Mapper接口中使用注解配置二级缓存即可</p>
+<ul>
+<li>在接口上加上注解<code>@CacheNamespace</code>即可，表示使用了二级缓存<ul>
+<li><strong>注意：要在对应的实体上实现序列化接口</strong></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p><strong>代码示例：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@CacheNamespace</span>	<span class="comment">//使用二级缓存</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserMapper</span> </span>&#123;...&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="三、Mybatis实现分页查询"><a href="#三、Mybatis实现分页查询" class="headerlink" title="三、Mybatis实现分页查询"></a>三、Mybatis实现分页查询</h2><blockquote>
+<p>实现B/S架构的分页查询</p>
+</blockquote>
+<p>如何实现分页查询</p>
+<ul>
+<li><p>物理分页：可以操作数据库实现（MySQL的limit关键字）</p>
+</li>
+<li><p>逻辑分页：查询所有，通过java代码进行逻辑分页【已经淘汰】</p>
+</li>
+</ul>
+<p>MySQL分页回顾：</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="comment">-- sql语法</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> 表名 <span class="keyword">limit</span> 开始索引,每页显示个数;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 模拟百度分页，共19条记录，一页展示5条</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 第一页</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> 表名 <span class="keyword">limit</span> <span class="number">0</span>,<span class="number">5</span>;</span><br><span class="line"><span class="comment">-- 第二页</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> 表名 <span class="keyword">limit</span> <span class="number">5</span>,<span class="number">5</span>;</span><br><span class="line"><span class="comment">-- 第三页</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> 表名 <span class="keyword">limit</span> <span class="number">10</span>,<span class="number">5</span>;</span><br><span class="line"><span class="comment">-- 第四页</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> 表名 <span class="keyword">limit</span> <span class="number">15</span>,<span class="number">5</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 索引公式</span></span><br><span class="line">index  = (当前页-1) × 每页显示个数;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 明确一个事项：当前页和每页显示的个数都是由用户(前端)提供的</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>分页查询流程分析：</p>
+<p><img data-src="/img/%E5%88%86%E9%A1%B5%E6%9F%A5%E8%AF%A2%E5%88%86%E6%9E%90.png" alt="分页查询分析"></p>
+<ul>
+<li>创建分页对象PageBean</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PageBean</span>&lt;<span class="title">E</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Integer totalCount;<span class="comment">// 总记录数</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Integer totalPage;<span class="comment">// 总页数</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> List&lt;E&gt; list;<span class="comment">// 结果集</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Integer pageNum;<span class="comment">// 当前页</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Integer pageSize;<span class="comment">// 每页个数</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>代码执行流程分析</li>
+</ul>
+<p><img data-src="/img/BS%E7%BB%93%E6%9E%84%E5%88%86%E9%A1%B5%E6%9F%A5%E8%AF%A2%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90.png" alt="BS结构分页查询流程分析"></p>
+<ul>
+<li>service层核心代码：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 分页查询</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> PageBean&lt;Route&gt; <span class="title">findByPage</span><span class="params">(Integer pageNum, Integer pageSize)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 获取RouteDao代理对象</span></span><br><span class="line">    SqlSession sqlSession = MyBatisUtils.openSession();</span><br><span class="line">    RouteMapper routeMapper = sqlSession.getMapper(RouteMapper<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    <span class="comment">// 1.创建PageBean对象</span></span><br><span class="line">    PageBean&lt;Route&gt; pb = <span class="keyword">new</span> PageBean&lt;&gt;();</span><br><span class="line">    <span class="comment">// 2.封装当前页和每页个数</span></span><br><span class="line">    pb.setPageNum(pageNum);</span><br><span class="line">    pb.setPageSize(pageSize);</span><br><span class="line">    <span class="comment">// 3.调用dao查询总记录数并封装</span></span><br><span class="line">    Integer totalCount = routeMapper.findCount();</span><br><span class="line">    pb.setTotalCount(totalCount);</span><br><span class="line">    <span class="comment">// 4.计算总页数并封装</span></span><br><span class="line">    Integer totalPage = (<span class="keyword">int</span>) Math.ceil(totalCount * <span class="number">1.0</span> / pageSize);</span><br><span class="line">    pb.setTotalPage(totalPage);</span><br><span class="line">    <span class="comment">// 5.计算开始索引</span></span><br><span class="line">    Integer index = (pageNum - <span class="number">1</span>) * pageSize;</span><br><span class="line">    <span class="comment">// 6.调用dao查询结果集并封装</span></span><br><span class="line">    List&lt;Route&gt; list = routeMapper.findList(index,pageSize);</span><br><span class="line">    pb.setList(list);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 释放资源</span></span><br><span class="line">    MyBatisUtils.release(sqlSession);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 7.返回PageBean对象</span></span><br><span class="line">    <span class="keyword">return</span> pb;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>dao层核心(接口+映射文件)<ul>
+<li>接口</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 查询总记录数</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> 总记录数</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function">Integer <span class="title">findTotalCount</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 分页查询</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> start    起始索引</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> pageSize 每页显示条数</span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> 查询到的线路信息</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function">List&lt;Route&gt; <span class="title">findByPage</span><span class="params">(@Param(<span class="string">"start"</span>)</span> Integer start, @<span class="title">Param</span><span class="params">(<span class="string">"pageSize"</span>)</span> Integer pageSize)</span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8" ?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">mapper</span> <span class="meta-keyword">PUBLIC</span> <span class="meta-string">"-//mybatis.org//DTD Mapper 3.0//EN"</span></span></span><br><span class="line"><span class="meta">        <span class="meta-string">"http://mybatis.org/dtd/mybatis-3-mapper.dtd"</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">mapper</span> <span class="attr">namespace</span>=<span class="string">"com.xxx.dao.RouteDao"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findTotalCount"</span> <span class="attr">resultType</span>=<span class="string">"java.lang.Integer"</span>&gt;</span></span><br><span class="line">        select count(*) from tab_route</span><br><span class="line">    <span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findByPage"</span> <span class="attr">resultType</span>=<span class="string">"com.xxx.domain.Route"</span>&gt;</span></span><br><span class="line">        select * from tab_route limit #&#123;start&#125;,#&#123;pageSize&#125;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">mapper</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="四、Lombok和MybatisX插件"><a href="#四、Lombok和MybatisX插件" class="headerlink" title="四、Lombok和MybatisX插件"></a>四、Lombok和MybatisX插件</h2><p>Lombok提供了简单的注解的形式来帮助我们简化消除一些必须有但显得很臃肿的 java 代码。通过使用对应的注解，可以在编译源码的时候生成对应的方法，所以不会影响任何运行效率。</p>
+<h3 id="4-1-Lombok"><a href="#4-1-Lombok" class="headerlink" title="4.1 Lombok"></a>4.1 Lombok</h3><h4 id="4-1-1-常用的-Lombok注解"><a href="#4-1-1-常用的-Lombok注解" class="headerlink" title="4.1.1 常用的 Lombok注解"></a>4.1.1 常用的 Lombok注解</h4><figure class="highlight markdown"><table><tr><td class="code"><pre><span class="line"><span class="bullet">* </span>@Data：注解在类上；生成toString，getter/setter</span><br><span class="line"></span><br><span class="line"><span class="bullet">* </span>@NoArgsConstructor：注解在类上；为类提供一个无参的构造方法</span><br><span class="line"></span><br><span class="line"><span class="bullet">* </span>@AllArgsConstructor：注解在类上；为类提供一个全参的构造方法</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-1-2-IDEA配置Lombok插件支持"><a href="#4-1-2-IDEA配置Lombok插件支持" class="headerlink" title="4.1.2 IDEA配置Lombok插件支持"></a>4.1.2 IDEA配置Lombok插件支持</h4><ul>
+<li>在设置setting 中找到plugins。在检索框中检索lombok：</li>
+</ul>
+<p>![Lombok插件安装 (1)](/img/Lombok插件安装 (1).png)</p>
+<ul>
+<li>在setting中找到下图界面，在右侧红框出打钩：</li>
+</ul>
+<p>![Lombok插件安装 (2)](/img/Lombok插件安装 (2).png)</p>
+<ul>
+<li>重启idea，大功告成</li>
+</ul>
+<blockquote>
+<p>注意：使用Lombok注解生成get/set等方法也需要导入Lombok的jar包才可以使用</p>
+</blockquote>
+<p><strong>Lombok注解使用演示：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Route</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> rid;<span class="comment">//线路id</span></span><br><span class="line">    <span class="keyword">private</span> String rname;<span class="comment">//线路名称</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">double</span> price;<span class="comment">//线路价格</span></span><br><span class="line">    <span class="keyword">private</span> String rimage;<span class="comment">//线路图</span></span><br><span class="line">    <span class="keyword">private</span> String routeIntroduce;<span class="comment">// 线路描述</span></span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="4-2-MybatisX"><a href="#4-2-MybatisX" class="headerlink" title="4.2 MybatisX"></a>4.2 MybatisX</h3><p>MybatisX 是一款基于 IDEA 的快速开发插件，为效率而生，主要功能有：</p>
+<ul>
+<li>Java 与 XML 调回跳转</li>
+<li>Mapper 方法自动生成 XML</li>
+</ul>
+<h4 id="4-2-1-IDEA配置MybatisX插件支持"><a href="#4-2-1-IDEA配置MybatisX插件支持" class="headerlink" title="4.2.1 IDEA配置MybatisX插件支持"></a>4.2.1 IDEA配置MybatisX插件支持</h4><p>打开 IDEA，进入 File -&gt; Settings -&gt; Plugins，搜索 <code>mybatisx</code> 并安装</p>
+<blockquote>
+<p>IDEA2018操作</p>
+</blockquote>
+<p><img data-src="/img/MybatisX%E6%8F%92%E4%BB%B6%E5%AE%89%E8%A3%85.png" alt="MybatisX插件安装"></p>
+<blockquote>
+<p>安装完后重启IDEA</p>
+</blockquote>
+<h4 id="4-2-2-项目中使用"><a href="#4-2-2-项目中使用" class="headerlink" title="4.2.2 项目中使用"></a>4.2.2 项目中使用</h4><p><img data-src="/img/%E4%BD%BF%E7%94%A8MybatisX.gif" alt="使用MybatisX"></p>
+]]></content>
+      <categories>
+        <category>框架</category>
+        <category>Mybatis</category>
+      </categories>
+      <tags>
+        <tag>Mybatis注解</tag>
+        <tag>分页查询</tag>
+        <tag>Lombok插件</tag>
+        <tag>Mybati插件</tag>
+      </tags>
+  </entry>
 </search>
