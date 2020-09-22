@@ -11860,10 +11860,12 @@
 <p>Spring的核心是 <code>IOC（Inverse Of Control：反转控制）</code>和 <code>AOP（Aspect Oriented Programming：面向切面编程）</code></p>
 <p>Spring一个全栈应用框架, 提供了表现层 Spring MVC 和持久层 Spring JDBC 以及业务层事务管理等众多应用技术</p>
 <p>Spring还能整合开源世界众多著名的第三方框架和类库，逐渐成为使用最多的 Java EE 企业应用开源框架 </p>
+<a id="more"></a>
+
 <p>三层：</p>
 <ul>
 <li>web(跟用户交互) —— SpringMVC</li>
-<li>service(处理业务)—— 事务—–声明式事务(Spring第三天)</li>
+<li>service(处理业务)—— 事务—–声明式事务</li>
 <li>dao(跟数据交互) —— SpringJDBC</li>
 </ul>
 <p>轻量级：</p>
