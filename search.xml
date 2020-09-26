@@ -12906,7 +12906,7 @@
 <li><code>HandlerMapping</code>：处理器映射器</li>
 <li><code>HandlerAdapter</code>：处理器适配器</li>
 <li><code>Handler</code>：控制器</li>
-<li><code>ViewReslover</code>：视图解析器</li>
+<li><code>ViewResolver</code>：视图解析器</li>
 </ul>
 <p><img data-src="/assets/SpringMVC%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B.png" alt="SpringMVC原理"></p>
 <ol>
@@ -12917,7 +12917,7 @@
 <li>HandlerAdapter经过适配调用具体的<code>Handler</code>（controller）</li>
 <li>Controller执行完成返回一个执行结果</li>
 <li>HandlerAdapter将Handler的结果ModelAndView对象返回给DispatcherServlet</li>
-<li>DispatcherServlet将ModelAndView对象传给<code>ViewReslover</code></li>
+<li>DispatcherServlet将ModelAndView对象传给<code>ViewResolver</code></li>
 <li>ViewReslover解析后得到具体View，并返回给DispatcherServlet</li>
 <li>DispatcherServlet根据View进行视图渲染（即将模型数据填充至视图中）</li>
 <li>DispatcherServlet会将渲染后的视图响应给浏览器</li>
