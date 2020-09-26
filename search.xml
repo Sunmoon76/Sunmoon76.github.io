@@ -12908,7 +12908,7 @@
 <li><code>Handler</code>：控制器</li>
 <li><code>ViewReslover</code>：视图解析器</li>
 </ul>
-<p><img data-src="/assets/SpringMVC%E5%8E%9F%E7%90%86.png" alt="SpringMVC原理"></p>
+<p><img data-src="/assets/SpringMVC%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B.png" alt="SpringMVC原理"></p>
 <ol>
 <li>用户通过浏览器发送请求至<code>DispatcherServlet</code></li>
 <li>DispatcherServlet收到请求调用<code>HandlerMapping</code></li>
