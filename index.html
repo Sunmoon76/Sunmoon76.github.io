@@ -219,7 +219,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-count">48</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -232,7 +232,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-count">138</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -271,6 +271,200 @@
 
         <div class="content index posts-expand">
           
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://sunmoon.com/2020/09/30/Maven%E9%AB%98%E7%BA%A7-%E5%88%86%E6%A8%A1%E5%9D%97%E5%BC%80%E5%8F%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/sunmoon.jpg">
+      <meta itemprop="name" content="Sunmoon">
+      <meta itemprop="description" content="阴晴雨雪，月圆月缺">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="清风的博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/09/30/Maven%E9%AB%98%E7%BA%A7-%E5%88%86%E6%A8%A1%E5%9D%97%E5%BC%80%E5%8F%91/" class="post-title-link" itemprop="url">Maven高级&分模块开发</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-09-30 21:11:07" itemprop="dateCreated datePublished" datetime="2020-09-30T21:11:07+08:00">2020-09-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-10-10 21:20:24" itemprop="dateModified" datetime="2020-10-10T21:20:24+08:00">2020-10-10</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Maven/" itemprop="url" rel="index"><span itemprop="name">Maven</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="分模块开发"><a href="#分模块开发" class="headerlink" title="分模块开发"></a>分模块开发</h1><h2 id="拆分与聚合的思想"><a href="#拆分与聚合的思想" class="headerlink" title="拆分与聚合的思想"></a>拆分与聚合的思想</h2><p><strong>拆分</strong> 将原来的一个项目拆分成一个个小的模块, 每个模块都有自己的坐标,  当其它项目需要本模块的功能时, 只需要按照坐标引入本模块就可以了</p>
+<p><strong>聚合</strong> 通过坐标的形式，将各个模块组装在一起,完成一个项目的功能</p>
+<p><img data-src="/assets/%E6%8B%86%E5%88%86%E4%B8%8E%E8%81%9A%E5%90%88%E6%80%9D%E6%83%B3.png" alt="拆分与聚合思想"></p>
+<h2 id="父子工程搭建"><a href="#父子工程搭建" class="headerlink" title="父子工程搭建"></a>父子工程搭建</h2><p>首先创建父工程，在父工程下创建dao、service、web模块，在sevice中添加一个依赖，导入dao模块，web模块中添加service模块。</p>
+<p>略…</p>
+<blockquote>
+<p>在进行依赖的时候, maven规定:</p>
+<ul>
+<li>编译阶段, 可以使用源代码进行依赖</li>
+<li>运行阶段,必须使用jar包进行依赖</li>
+</ul>
+</blockquote>
+<h2 id="两套关系梳理"><a href="#两套关系梳理" class="headerlink" title="两套关系梳理"></a>两套关系梳理</h2><p>在上面的工程中, 存在两套关系</p>
+<ul>
+<li>父子工程之间: 继承关系, 子工程可以使用父工程中的jar包</li>
+<li>模块工程之间:  默认是没有任何关系的，但是可以通过依赖建立两者之间的关系，而且这个依赖关系是可以传递的</li>
+</ul>
+<blockquote>
+<p>A–&gt;B   B–&gt;C         A–&gt;C<br>我们把A和B之间  或者  B和C 之间称为  直接依赖<br>我们把    A和C   之间称为   间接依赖</p>
+</blockquote>
+<h1 id="依赖冲突"><a href="#依赖冲突" class="headerlink" title="依赖冲突"></a>依赖冲突</h1><h2 id="什么是依赖冲突"><a href="#什么是依赖冲突" class="headerlink" title="什么是依赖冲突"></a>什么是依赖冲突</h2><p>在依赖的传递过程中，很容易出现同一jar包的版本冲突问题，这个就称为依赖冲突 </p>
+<p><img data-src="/assets/%E4%BB%80%E4%B9%88%E6%98%AF%E4%BE%9D%E8%B5%96%E5%86%B2%E7%AA%81.png" alt="什么是依赖冲突"></p>
+<h2 id="依赖冲突解决"><a href="#依赖冲突解决" class="headerlink" title="依赖冲突解决"></a>依赖冲突解决</h2><h3 id="第一声明有限原则"><a href="#第一声明有限原则" class="headerlink" title="第一声明有限原则"></a>第一声明有限原则</h3><p>在pom文件定义依赖，先声明的依赖为准。</p>
+<p><img data-src="/assets/%E7%AC%AC%E4%B8%80%E5%A3%B0%E6%98%8E%E4%BC%98%E5%85%88%E5%8E%9F%E5%88%99.png" alt="第一声明优先原则"></p>
+<h3 id="路径近者优先原则"><a href="#路径近者优先原则" class="headerlink" title="路径近者优先原则"></a>路径近者优先原则</h3><p>从依赖程序开始算起，到被依赖的程序，以路径短的为准。</p>
+<p><img data-src="/assets/%E8%B7%AF%E5%BE%84%E8%BF%91%E8%80%85%E4%BC%98%E5%85%88%E5%8E%9F%E5%88%99.png" alt="路径近者优先原则"></p>
+<h3 id="依赖排除"><a href="#依赖排除" class="headerlink" title="依赖排除"></a>依赖排除</h3><p>依赖排除就是在依赖引入的过程中，通过<code>exclusions</code>标签排掉指定的跟随依赖</p>
+<p><img data-src="/assets/%E4%BE%9D%E8%B5%96%E6%8E%92%E9%99%A4.png" alt="依赖排除"></p>
+<h3 id="版本锁定"><a href="#版本锁定" class="headerlink" title="版本锁定"></a>版本锁定</h3><p>面对众多的依赖，有一种方法不用考虑依赖路径、声明优先等因素，可以采用直接锁定版本的方法确定依赖构件的版本</p>
+<p>版本锁定后，系统会以锁定的版本的为准添加到工程中，此方法在企业开发中常用。</p>
+<p><img data-src="/assets/%E7%89%88%E6%9C%AC%E9%94%81%E5%AE%9A.png" alt="版本锁定"></p>
+<p><strong>优化: 提取版本信息</strong> </p>
+<p><img data-src="/assets/%E4%BC%98%E5%8C%96%E7%89%88%E6%9C%AC%E9%94%81%E5%AE%9A-%E6%8F%90%E5%8F%96%E7%89%88%E6%9C%AC%E4%BF%A1%E6%81%AF.png" alt="优化版本锁定-提取版本信息"></p>
+<h1 id="私服"><a href="#私服" class="headerlink" title="私服"></a>私服</h1><h2 id="私服简介"><a href="#私服简介" class="headerlink" title="私服简介"></a>私服简介</h2><p>公司在自己的局域网内搭建自己的远程仓库服务器，称为私服，私服服务器即是公司内部的maven远程仓库，每个员工的电脑上安装maven软件并且连接私服服务器，员工将自己开发的项目打成jar并发布到私服服务器，其它项目组从私服服务器下载所依赖的构件（jar）。</p>
+<p><img data-src="/assets/%E7%A7%81%E6%9C%8D.jpg" alt="私服"></p>
+<h2 id="搭建私服环境"><a href="#搭建私服环境" class="headerlink" title="搭建私服环境"></a>搭建私服环境</h2><h3 id="下载nexus"><a href="#下载nexus" class="headerlink" title="下载nexus"></a>下载nexus</h3><p>Nexus是Maven仓库管理器，通过nexus可以搭建maven仓库, 软件已经提供在资料中<code>nexus-2.12.0-01-bundle.zip</code></p>
+<p><img data-src="/assets/image-20200628144428365.png" alt="image-20200628144428365"></p>
+<h3 id="安装nexus"><a href="#安装nexus" class="headerlink" title="安装nexus"></a>安装nexus</h3><p>第1步:  解压nexus-2.12.0-01-bundle.zip到一个没有中文没有空格的目录  </p>
+<p> <img data-src="/assets/image-20200628145356064.png" alt="image-20200628145356064"></p>
+<p>第2步: 以<code>管理员身份</code>运行cmd命令, 然后进入软件的bin目录，通过命令安装并启动nexus软件</p>
+<p> <img data-src="/assets/image-20200628145948727.png" alt="image-20200628145948727"></p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">补充下停止和下载的命令</span><br><span class="line">  停止 nexus.bat  stop</span><br><span class="line">  卸载 nexus.bat  uninstall</span><br></pre></td></tr></table></figure>
+
+<p>第3步: 访问nexus</p>
+<p>nexus默认监听端口为8081, 通过 <code>http://localhost:8081/nexus</code> 即可访问</p>
+<p><img data-src="/assets/image-20200628150353480.png" alt="image-20200628150353480"></p>
+<p>第4步: 登录nexus</p>
+<p>nexus默认的用户名是==admin==, 默认的密码是==admin123==</p>
+<p> <img data-src="/assets/image-20200628151112905.png" alt="image-20200628151112905"></p>
+<p>登录成功后,会看到下面的内容:</p>
+<p> <img data-src="/assets/image-20200628151303488.png" alt="image-20200628151303488"></p>
+<h2 id="仓库类型"><a href="#仓库类型" class="headerlink" title="仓库类型"></a>仓库类型</h2><p>仓库有下面四类:</p>
+<ul>
+<li>proxy  代理仓库, 用于代理远程仓库(中央)</li>
+<li>virtual  废弃的代理仓库</li>
+<li>hosted  用于本地jar包上传的仓库</li>
+<li>group  就是上面仓库的综合, 用于jar包的下载</li>
+</ul>
+<p><img data-src="/assets/image-20200628151528804.png" alt="image-20200628151528804"></p>
+<h2 id="将项目发布到私服"><a href="#将项目发布到私服" class="headerlink" title="将项目发布到私服"></a>将项目发布到私服</h2><p>企业中多个团队协作开发通常会将一些公用的组件、开发模块等发布到私服供其它团队或模块开发人员使用。</p>
+<p>第1步：在maven的settings.xml文件中,  添加下面配置</p>
+ <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">    此用户名和密码用于私服校验，因为私服需要知道上传的账号和密码是否和私服中的账号和密码一致。</span></span><br><span class="line"><span class="comment">    添加到servers节点下</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">id</span>&gt;</span>releases<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">username</span>&gt;</span>admin<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">password</span>&gt;</span>admin123<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">id</span>&gt;</span>snapshots<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">username</span>&gt;</span>admin<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">password</span>&gt;</span>admin123<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>第2步： 在需要操作的模块(比如ssm_dao)的pom.xml文件中, 添加下面配置</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">	配置私服仓库的地址，如果版本为release则上传到私服的release仓库，如果版本为snapshot则上传到私服的snapshot仓库</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">distributionManagement</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">repository</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">id</span>&gt;</span>releases<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://localhost:8081/nexus/content/repositories/releases/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">repository</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">id</span>&gt;</span>snapshots<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://localhost:8081/nexus/content/repositories/snapshots/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">distributionManagement</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>第3步： 选择需要操作的模块(比如ssm_dao), 执行deploy命令</p>
+<p> <img data-src="/assets/image-20200628154108687.png" alt="image-20200628154108687"></p>
+<p>第4步: 执行完毕后, 可以在私服的对应目录下观察到上传的文件</p>
+<p> <img data-src="/assets/image-20200628154910224.png" alt="image-20200628154910224"></p>
+<h2 id="从私服下载jar包"><a href="#从私服下载jar包" class="headerlink" title="从私服下载jar包"></a>从私服下载jar包</h2><p>配置nexus之后，本地仓库没有jar包，就去私服下载，私服如果没有, 再由私服去中央下载。</p>
+<p>第1步:  在maven的settings.xml文件中, 添加下面配置</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--配置下载仓库--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">profile</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">id</span>&gt;</span>dev<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">repositories</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">repository</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>nexus<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://localhost:8081/nexus/content/groups/public/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">releases</span>&gt;</span>  </span><br><span class="line">       <span class="tag">&lt;<span class="name">enabled</span>&gt;</span>true<span class="tag">&lt;/<span class="name">enabled</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;/<span class="name">releases</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">snapshots</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">enabled</span>&gt;</span>true<span class="tag">&lt;/<span class="name">enabled</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">snapshots</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">repository</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">repositories</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">pluginRepositories</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">pluginRepository</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">id</span>&gt;</span>public<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>Public Repositories<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://localhost:8081/nexus/content/groups/public/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">pluginRepository</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">pluginRepositories</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;/<span class="name">profile</span>&gt;</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">&lt;!--使用profile定义仓库需要激活才可生效--&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">activeProfiles</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">activeProfile</span>&gt;</span>dev<span class="tag">&lt;/<span class="name">activeProfile</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;/<span class="name">activeProfiles</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>第2步: 测试</p>
+<p>1)  首先在ssm_parent工程上执行install, 这样就可以将所有模块打包到本地仓库</p>
+<p>2)  然后删除本地仓库中的ssm_dao的文件</p>
+<p>3)  在ssm_service模块上执行compile命令</p>
+<p>​     注意: service 要编译成功必须依赖仓库中的ssm_dao,而现在本地仓库中没有, 他就会从私服下载</p>
+<p>4)  通过控制台观察效果</p>
+<p><img data-src="/assets/image-20200628162939278.png" alt="image-20200628162939278"></p>
+<h1 id="软件的服务模式"><a href="#软件的服务模式" class="headerlink" title="软件的服务模式"></a>软件的服务模式</h1><p>目前, 软件服务主要有三种模式:</p>
+<ul>
+<li><strong>IaaS（基础设施即服务）</strong> 提供给客户最基础的东西, 然后客户自己完成所有工作</li>
+<li><strong>PaaS（平台即服务）</strong>提供给客户半成品的东西, 然后客户自己完成剩下的工作</li>
+<li><strong>SaaS（软件即服务）</strong>提供给客户成品,  客户只需要使用</li>
+</ul>
+<p><img data-src="/assets/%E8%BD%AF%E4%BB%B6%E6%9C%8D%E5%8A%A1%E6%A8%A1%E5%BC%8F.png" alt="软件服务模式"></p>
+<p>SaaS（Software-as-a-service）的意思是软件即服务。简单说就是在线系统模式，即软件服务商提供的软件在线服务。</p>
+<p>SaaS软件就适用对象而言，可以划分为针对个人的与针对企业的</p>
+<ul>
+<li>面向个人的SaaS产品：在线文档，账务管理，文件管理，日程计划、照片管理、联系人管理，等等云类型的服务</li>
+<li>面向企业的SaaS产品：CRM（客户关系管理）、线上视频或者与群组通话会议、OA(办公系统)、外勤管理、财务管理、审批管理等</li>
+</ul>
+<h2 id="软件开发流程"><a href="#软件开发流程" class="headerlink" title="软件开发流程"></a>软件开发流程</h2><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">- </span>货代平台开发周期6个月左右，团队需要10人左右...</span><br><span class="line"><span class="code">	技术总监或架构师	产品经理或项目经理	java开发	前端和美工	测试    运维</span></span><br><span class="line"><span class="code">		   1				1			  4         2		  1       1</span></span><br><span class="line"><span class="code">		</span></span><br><span class="line"><span class="bullet">1. </span>立项</span><br><span class="line"><span class="code">	项目可实施性分析：（招商银行）100W项目，开发周期预计6个月，需要10人，运营（人力）成本2W/人</span></span><br><span class="line"><span class="code">	产品经理入住银行，进行需求调研《需求设计说明书》</span></span><br><span class="line"><span class="code">	需求研讨会：团队所有成员参加</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">2. </span>设计</span><br><span class="line"><span class="code">	UI/UE工程师：《页面原型》</span></span><br><span class="line"><span class="code">	架构师：统一开发环境，项目技术选项，项目架构设计，数据库设计等等《概要设计说明书》</span></span><br><span class="line"><span class="code">	产品经理：接口规范、方法规范、参数规范、步骤要求等等《详细设计说明书》</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">3. </span>开发</span><br><span class="line"><span class="code">	coding（编码），码农</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">4. </span>测试</span><br><span class="line"><span class="code">	白盒测试：代码逻辑和性能</span></span><br><span class="line"><span class="code">	黑盒测试：用户体验</span></span><br><span class="line"><span class="code">	灰盒测试：黑+白</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">5. </span>部署</span><br><span class="line"><span class="code">	运维人员产品部署上传维护....</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="UML建模"><a href="#UML建模" class="headerlink" title="UML建模"></a>UML建模</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p><code>UML</code>：统一建模语言（UML，UnifiedModelingLanguage）是面向对象软件的标准化建模语言。UML因其简单、统一的特点，而且能表达软件设计中的动态和静态信息，目前已成为可视化建模语言的工业标准。</p>
+<p><code>PowerDesigner</code>：一款绘制各种UML图形的工具    </p>
+<h2 id="用例图"><a href="#用例图" class="headerlink" title="用例图"></a>用例图</h2><p>在整个项目中会有不同的角色在使用，但是不同的角色在项目中做的事儿或者说看到的菜单是不一样的，为了让程序员更直观的获取到需求信息，项目经理或产品经理会使用用例图直观的表示出来。</p>
+<p><img data-src="/assets/%E7%94%A8%E4%BE%8B%E5%9B%BE-1.png" alt="用例图-1"></p>
+<p><img data-src="/assets/%E7%94%A8%E4%BE%8B%E5%9B%BE-2.png" alt="用例图-2"></p>
+<p><img data-src="/assets/%E7%94%A8%E4%BE%8B%E5%9B%BE-3.png" alt="用例图-3"></p>
+
+      
+    </div>
+
+    
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -1173,117 +1367,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://sunmoon.com/2020/09/09/Mybatis%E6%B3%A8%E8%A7%A3%E5%BC%80%E5%8F%91-%E5%88%86%E9%A1%B5%E6%9F%A5%E8%AF%A2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/sunmoon.jpg">
-      <meta itemprop="name" content="Sunmoon">
-      <meta itemprop="description" content="阴晴雨雪，月圆月缺">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="清风的博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/09/09/Mybatis%E6%B3%A8%E8%A7%A3%E5%BC%80%E5%8F%91-%E5%88%86%E9%A1%B5%E6%9F%A5%E8%AF%A2/" class="post-title-link" itemprop="url">Mybatis注解开发&分页查询</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2020-09-09 21:39:20 / 修改时间：22:17:07" itemprop="dateCreated datePublished" datetime="2020-09-09T21:39:20+08:00">2020-09-09</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%A1%86%E6%9E%B6/" itemprop="url" rel="index"><span itemprop="name">框架</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%A1%86%E6%9E%B6/Mybatis/" itemprop="url" rel="index"><span itemprop="name">Mybatis</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>11k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>10 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一-核心配置文件总结"><a href="#一-核心配置文件总结" class="headerlink" title="一  核心配置文件总结"></a>一  核心配置文件总结</h2><p><strong>SqlMapConfig.xml 中配置的内容和顺序如下：</strong>  </p>
-<ul>
-<li>properties（属性）</li>
-<li>settings（全局配置参数）</li>
-<li>typeAliases（类型别名）</li>
-<li>typeHandlers（类型处理器）</li>
-<li>objectFactory（对象工厂）</li>
-<li>plugins（插件）</li>
-<li>environments（数据库环境配置）<ul>
-<li>environment（数据库环境子属性对象）<ul>
-<li>transactionManager（事务管理）</li>
-<li>dataSource（数据源）</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>mappers（映射器）</li>
-</ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/09/09/Mybatis%E6%B3%A8%E8%A7%A3%E5%BC%80%E5%8F%91-%E5%88%86%E9%A1%B5%E6%9F%A5%E8%AF%A2/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1339,13 +1422,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">609k</span>
+    <span title="站点总字数">613k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">9:14</span>
+    <span title="站点阅读时长">9:17</span>
 </div>
 
 
