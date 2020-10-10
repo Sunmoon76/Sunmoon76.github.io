@@ -13715,6 +13715,8 @@
     <content><![CDATA[<h1 id="分模块开发"><a href="#分模块开发" class="headerlink" title="分模块开发"></a>分模块开发</h1><h2 id="拆分与聚合的思想"><a href="#拆分与聚合的思想" class="headerlink" title="拆分与聚合的思想"></a>拆分与聚合的思想</h2><p><strong>拆分</strong> 将原来的一个项目拆分成一个个小的模块, 每个模块都有自己的坐标,  当其它项目需要本模块的功能时, 只需要按照坐标引入本模块就可以了</p>
 <p><strong>聚合</strong> 通过坐标的形式，将各个模块组装在一起,完成一个项目的功能</p>
 <p><img data-src="/assets/%E6%8B%86%E5%88%86%E4%B8%8E%E8%81%9A%E5%90%88%E6%80%9D%E6%83%B3.png" alt="拆分与聚合思想"></p>
+<a id="more"></a>
+
 <h2 id="父子工程搭建"><a href="#父子工程搭建" class="headerlink" title="父子工程搭建"></a>父子工程搭建</h2><p>首先创建父工程，在父工程下创建dao、service、web模块，在sevice中添加一个依赖，导入dao模块，web模块中添加service模块。</p>
 <p>略…</p>
 <blockquote>
