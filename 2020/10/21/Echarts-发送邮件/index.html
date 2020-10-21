@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/wind32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/wind16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-center-atom.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"sunmoon.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.3","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="出口报运调用流程分析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Echarts&amp;发送邮件">
+<meta property="og:url" content="http://sunmoon.com/2020/10/21/Echarts-%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/index.html">
+<meta property="og:site_name" content="清风的博客">
+<meta property="og:description" content="出口报运调用流程分析">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20201021085324793.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200707182940750.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200707184848096.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200707185218626.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200707185711085.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20201021091214531.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20201021091724593.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20201021101534728.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200707231144692.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200707231646308.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200707232340454.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200707232545527.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200707233356651.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200811124725610.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200908210036559.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200708092122257.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200708094441079.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200708093243089.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200708095518203.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20201021151435733.png">
+<meta property="article:published_time" content="2020-10-21T13:01:06.000Z">
+<meta property="article:modified_time" content="2020-10-21T13:04:13.601Z">
+<meta property="article:author" content="Sunmoon">
+<meta property="article:tag" content="Echarts">
+<meta property="article:tag" content="发送邮件">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://sunmoon.com/assets/image-20201021085324793.png">
+
+<link rel="canonical" href="http://sunmoon.com/2020/10/21/Echarts-%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Echarts&发送邮件 | 清风的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before, .use-motion .logo-line-after {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="清风的博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line-before"></i>
+      <h1 class="site-title">清风的博客</h1>
+      <i class="logo-line-after"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">山水有相逢，山不动，水不停</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#出口报运"><span class="nav-number">1.</span> <span class="nav-text">出口报运</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#调用流程分析"><span class="nav-number">1.1.</span> <span class="nav-text">调用流程分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#海关报运平台搭建"><span class="nav-number">1.2.</span> <span class="nav-text">海关报运平台搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#导入sql脚本到数据库"><span class="nav-number">1.2.1.</span> <span class="nav-text">导入sql脚本到数据库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#导入海关程序"><span class="nav-number">1.2.2.</span> <span class="nav-text">导入海关程序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#部署海关程序"><span class="nav-number">1.2.3.</span> <span class="nav-text">部署海关程序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#程序使用地址"><span class="nav-number">1.2.4.</span> <span class="nav-text">程序使用地址</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#发送电子报运"><span class="nav-number">1.3.</span> <span class="nav-text">发送电子报运</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#导入海关提供的标准对象"><span class="nav-number">1.3.1.</span> <span class="nav-text">导入海关提供的标准对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ExportController"><span class="nav-number">1.3.2.</span> <span class="nav-text">ExportController</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ExportService"><span class="nav-number">1.3.3.</span> <span class="nav-text">ExportService</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查询报运结果"><span class="nav-number">1.4.</span> <span class="nav-text">查询报运结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ExportController-1"><span class="nav-number">1.4.1.</span> <span class="nav-text">ExportController</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ExportService-1"><span class="nav-number">1.4.2.</span> <span class="nav-text">ExportService</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#整合定时任务"><span class="nav-number">1.5.</span> <span class="nav-text">整合定时任务</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建定时任务的类"><span class="nav-number">1.5.1.</span> <span class="nav-text">创建定时任务的类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#添加定时任务的配置"><span class="nav-number">1.5.2.</span> <span class="nav-text">添加定时任务的配置</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#图表报表工具-Echarts"><span class="nav-number">2.</span> <span class="nav-text">图表报表工具 Echarts</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">2.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#快速入门"><span class="nav-number">2.2.</span> <span class="nav-text">快速入门</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#统计分析模块"><span class="nav-number">3.</span> <span class="nav-text">统计分析模块</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#需求说明"><span class="nav-number">3.1.</span> <span class="nav-text">需求说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#环境搭建"><span class="nav-number">3.2.</span> <span class="nav-text">环境搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#架构图"><span class="nav-number">3.2.1.</span> <span class="nav-text">架构图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建模块-建立依赖"><span class="nav-number">3.2.2.</span> <span class="nav-text">创建模块,建立依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#复制代码"><span class="nav-number">3.2.3.</span> <span class="nav-text">复制代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#复制配置文件"><span class="nav-number">3.2.4.</span> <span class="nav-text">复制配置文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#添加启动文件"><span class="nav-number">3.2.5.</span> <span class="nav-text">添加启动文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现页面跳转"><span class="nav-number">3.2.6.</span> <span class="nav-text">实现页面跳转</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#访问测试-略"><span class="nav-number">3.2.7.</span> <span class="nav-text">访问测试(略)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#厂家销售统计"><span class="nav-number">3.3.</span> <span class="nav-text">厂家销售统计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#StatController"><span class="nav-number">3.3.1.</span> <span class="nav-text">StatController</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#StatDao-xml"><span class="nav-number">3.3.2.</span> <span class="nav-text">StatDao.xml</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stat-factory-jsp"><span class="nav-number">3.3.3.</span> <span class="nav-text">stat-factory.jsp</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#产品的销量排行榜"><span class="nav-number">3.4.</span> <span class="nav-text">产品的销量排行榜</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#StatController-1"><span class="nav-number">3.4.1.</span> <span class="nav-text">StatController</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#StatDao-xml-1"><span class="nav-number">3.4.2.</span> <span class="nav-text">StatDao.xml</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stat-sell-jsp"><span class="nav-number">3.4.3.</span> <span class="nav-text">stat-sell.jsp</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统访问压力图"><span class="nav-number">3.5.</span> <span class="nav-text">系统访问压力图</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#StatController-2"><span class="nav-number">3.5.1.</span> <span class="nav-text">StatController</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#StatDao-xml-2"><span class="nav-number">3.5.2.</span> <span class="nav-text">StatDao.xml</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stat-online-jsp"><span class="nav-number">3.5.3.</span> <span class="nav-text">stat-online.jsp</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#发送邮件"><span class="nav-number">4.</span> <span class="nav-text">发送邮件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#邮件传输的过程"><span class="nav-number">4.1.</span> <span class="nav-text">邮件传输的过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#发送邮件准备工作"><span class="nav-number">4.2.</span> <span class="nav-text">发送邮件准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#引入坐标-已加入"><span class="nav-number">4.2.1.</span> <span class="nav-text">引入坐标(已加入)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#申请授权码"><span class="nav-number">4.2.2.</span> <span class="nav-text">申请授权码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#加入工具类-并修改"><span class="nav-number">4.2.3.</span> <span class="nav-text">加入工具类,并修改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试"><span class="nav-number">4.2.4.</span> <span class="nav-text">测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现发送邮件功能"><span class="nav-number">4.3.</span> <span class="nav-text">实现发送邮件功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#发送邮件功能问题分析"><span class="nav-number">4.4.</span> <span class="nav-text">发送邮件功能问题分析</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sunmoon"
+      src="/images/sunmoon.jpg">
+  <p class="site-author-name" itemprop="name">Sunmoon</p>
+  <div class="site-description" itemprop="description">阴晴雨雪，月圆月缺</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">56</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">162</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Sunmoon76" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Sunmoon76" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/gongleman9016/" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;gongleman9016&#x2F;" rel="noopener" target="_blank"><i class="fa fa-cube fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Sunmoon76" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://sunmoon.com/2020/10/21/Echarts-%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/sunmoon.jpg">
+      <meta itemprop="name" content="Sunmoon">
+      <meta itemprop="description" content="阴晴雨雪，月圆月缺">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="清风的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Echarts&发送邮件
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-10-21 21:01:06 / 修改时间：21:04:13" itemprop="dateCreated datePublished" datetime="2020-10-21T21:01:06+08:00">2020-10-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%85%B6%E4%BB%96/" itemprop="url" rel="index"><span itemprop="name">其他</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="出口报运"><a href="#出口报运" class="headerlink" title="出口报运"></a>出口报运</h1><h2 id="调用流程分析"><a href="#调用流程分析" class="headerlink" title="调用流程分析"></a>调用流程分析</h2><p><img data-src="/assets/image-20201021085324793.png" alt="image-20201021085324793"></p>
+<a id="more"></a>
+
+<h2 id="海关报运平台搭建"><a href="#海关报运平台搭建" class="headerlink" title="海关报运平台搭建"></a>海关报运平台搭建</h2><h3 id="导入sql脚本到数据库"><a href="#导入sql脚本到数据库" class="headerlink" title="导入sql脚本到数据库"></a>导入sql脚本到数据库</h3><p><img data-src="/assets/image-20200707182940750.png" alt="image-20201021085324793"></p>
+<h3 id="导入海关程序"><a href="#导入海关程序" class="headerlink" title="导入海关程序"></a>导入海关程序</h3><p>将jk_export导入到export_parent的同级目录,  然后使用idea导入此程序</p>
+<p> <img data-src="/assets/image-20200707184848096.png" alt="image-20200707185218626"></p>
+<h3 id="部署海关程序"><a href="#部署海关程序" class="headerlink" title="部署海关程序"></a>部署海关程序</h3><p><img data-src="/assets/image-20200707185218626.png" alt="image-20200707185218626"></p>
+<h3 id="程序使用地址"><a href="#程序使用地址" class="headerlink" title="程序使用地址"></a>程序使用地址</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">电子报运提交（post）</span><br><span class="line"><span class="code">	http://localhost:5003/ws/export/user</span></span><br><span class="line">电子保存结果查询（get）</span><br><span class="line"><span class="code">	http://localhost:5003/ws/export/user/报运单id</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="发送电子报运"><a href="#发送电子报运" class="headerlink" title="发送电子报运"></a>发送电子报运</h2><h3 id="导入海关提供的标准对象"><a href="#导入海关提供的标准对象" class="headerlink" title="导入海关提供的标准对象"></a>导入海关提供的标准对象</h3><p><img data-src="/assets/image-20200707185711085.png" alt="image-20200707185711085"> </p>
+<h3 id="ExportController"><a href="#ExportController" class="headerlink" title="ExportController"></a>ExportController</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping</span>(value = <span class="string">"/exportE"</span>, name = <span class="string">"海关电子报运"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">exportE</span><span class="params">(String id)</span> </span>&#123;</span><br><span class="line">    exportService.exportE(id);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//重定向到list方法</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">"redirect:/cargo/export/list.do"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ExportService"><a href="#ExportService" class="headerlink" title="ExportService"></a>ExportService</h3><p><img data-src="/assets/image-20201021091214531.png" alt="image-20201021091214531"> </p>
+<p><img data-src="/assets/image-20201021091724593.png" alt="image-20201021091724593"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">exportE</span><span class="params">(String id)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">exportE</span><span class="params">(String id)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//1. 查询报运单信息,封装成ExportVo</span></span><br><span class="line">    Export export = exportDao.selectByPrimaryKey(id);</span><br><span class="line">    ExportVo exportVo = <span class="keyword">new</span> ExportVo();</span><br><span class="line">    BeanUtils.copyProperties(export, exportVo);</span><br><span class="line">    exportVo.setExportId(id);</span><br><span class="line">    exportVo.setExportDate(<span class="keyword">new</span> Date());</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//2. 查询报运单下的货物信息, 封装成ExportProductVo</span></span><br><span class="line">    ExportProductExample exportProductExample = <span class="keyword">new</span> ExportProductExample();</span><br><span class="line">    exportProductExample.createCriteria().andExportIdEqualTo(id);</span><br><span class="line">    List&lt;ExportProduct&gt; exportProductList = exportProductDao.selectByExample(exportProductExample);</span><br><span class="line">    <span class="keyword">for</span> (ExportProduct exportProduct : exportProductList) &#123;</span><br><span class="line">        ExportProductVo exportProductVo = <span class="keyword">new</span> ExportProductVo();</span><br><span class="line">        BeanUtils.copyProperties(exportProduct, exportProductVo);</span><br><span class="line">        exportProductVo.setExportProductId(exportProduct.getId());</span><br><span class="line"></span><br><span class="line">        exportVo.getProducts().add(exportProductVo);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//3. 调用海关平台,然后将ExportVo发送出去</span></span><br><span class="line">    WebClient.create(<span class="string">"http://localhost:5003/ws/export/user"</span>).post(exportVo);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//4. 修改当前报运单的状态(0-草稿  1-已上报  2-已报运)</span></span><br><span class="line">    export.setState(<span class="number">1</span>);</span><br><span class="line">    exportDao.updateByPrimaryKeySelective(export);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="查询报运结果"><a href="#查询报运结果" class="headerlink" title="查询报运结果"></a>查询报运结果</h2><h3 id="ExportController-1"><a href="#ExportController-1" class="headerlink" title="ExportController"></a>ExportController</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping</span>(value = <span class="string">"/findExportResult"</span>, name = <span class="string">"查询海关电子报运结果"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">findExportResult</span><span class="params">(String id)</span> </span>&#123;</span><br><span class="line">    exportService.findExportResult(id);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//重定向到list方法</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">"redirect:/cargo/export/list.do"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ExportService-1"><a href="#ExportService-1" class="headerlink" title="ExportService"></a>ExportService</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">findExportResult</span><span class="params">(String id)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">findExportResult</span><span class="params">(String id)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//1.调用接口查询报运单审核状态</span></span><br><span class="line">        ExportResult exportResult = WebClient.create(<span class="string">"http://localhost:5003/ws/export/user/"</span> + id).get(ExportResult<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//2. 根据exportResult对象更新报运单中的信息</span></span><br><span class="line">        Export export = <span class="keyword">new</span> Export();</span><br><span class="line">        export.setId(id);</span><br><span class="line">        export.setState(exportResult.getState());</span><br><span class="line">        export.setRemark(exportResult.getRemark());</span><br><span class="line">        exportDao.updateByPrimaryKeySelective(export);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//3. 根据exportResult对象中的products更新报运单中的信息</span></span><br><span class="line">        <span class="keyword">for</span> (ExportProductResult exportProductResult : exportResult.getProducts()) &#123;</span><br><span class="line">            ExportProduct exportProduct = <span class="keyword">new</span> ExportProduct();</span><br><span class="line">            exportProduct.setId(exportProductResult.getExportProductId());</span><br><span class="line">            exportProduct.setTax(exportProductResult.getTax());</span><br><span class="line">            exportProductDao.updateByPrimaryKeySelective(exportProduct);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        System.out.println(<span class="string">"查询海关数据失败,请检查"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="整合定时任务"><a href="#整合定时任务" class="headerlink" title="整合定时任务"></a>整合定时任务</h2><blockquote>
+<p>要求每天的1,9,17点进行查询</p>
+</blockquote>
+<h3 id="创建定时任务的类"><a href="#创建定时任务的类" class="headerlink" title="创建定时任务的类"></a>创建定时任务的类</h3><p>在export_cargo模块下创建定时任务的类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExportJob</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ExportDao exportDao;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ExportProductDao exportProductDao;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateExportResult</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//1 查询状态为1的报运单</span></span><br><span class="line">        ExportExample exportExample = <span class="keyword">new</span> ExportExample();</span><br><span class="line">        exportExample.createCriteria().andStateEqualTo(<span class="number">1L</span>);</span><br><span class="line">        List&lt;Export&gt; exportList = exportDao.selectByExample(exportExample);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (Export export : exportList) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">//2 调用海关平台查询</span></span><br><span class="line">                ExportResult exportResult = WebClient.create(<span class="string">"http://localhost:5003/ws/export/user/"</span> + export.getId()).get(ExportResult<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line"></span><br><span class="line">                <span class="comment">//3 更新报运单状态</span></span><br><span class="line">                export.setId(exportResult.getExportId());<span class="comment">//id</span></span><br><span class="line">                export.setState(exportResult.getState());<span class="comment">//状态</span></span><br><span class="line">                export.setRemark(exportResult.getRemark());<span class="comment">//备注</span></span><br><span class="line">                exportDao.updateByPrimaryKeySelective(export);<span class="comment">//一定支持动态SQL</span></span><br><span class="line"></span><br><span class="line">                <span class="comment">//4 更新报运单下货物的税</span></span><br><span class="line">                <span class="keyword">for</span> (ExportProductResult product : exportResult.getProducts()) &#123;</span><br><span class="line">                    ExportProduct exportProduct = <span class="keyword">new</span> ExportProduct();</span><br><span class="line">                    exportProduct.setId(product.getExportProductId());</span><br><span class="line">                    exportProduct.setTax(product.getTax());</span><br><span class="line"></span><br><span class="line">                    exportProductDao.updateByPrimaryKeySelective(exportProduct);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">                System.out.println(<span class="string">"未查到相关信息"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="添加定时任务的配置"><a href="#添加定时任务的配置" class="headerlink" title="添加定时任务的配置"></a>添加定时任务的配置</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:context</span>=<span class="string">"http://www.springframework.org/schema/context"</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:p</span>=<span class="string">"http://www.springframework.org/schema/p"</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xsi:schemaLocation</span>=<span class="string">"</span></span></span><br><span class="line"><span class="tag"><span class="string">       	http://www.springframework.org/schema/beans</span></span></span><br><span class="line"><span class="tag"><span class="string">		http://www.springframework.org/schema/beans/spring-beans.xsd</span></span></span><br><span class="line"><span class="tag"><span class="string">       	http://www.springframework.org/schema/context</span></span></span><br><span class="line"><span class="tag"><span class="string">		http://www.springframework.org/schema/context/spring-context.xsd"</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--1.配置Job：自定义java类 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"myJob"</span> <span class="attr">class</span>=<span class="string">"com.itheima.service.cargo.job.ExportJob"</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--2.配置JobDetail：执行任务来的方法--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"jobDetail"</span> <span class="attr">class</span>=<span class="string">"org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--1.确定任务类--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"targetObject"</span> <span class="attr">ref</span>=<span class="string">"myJob"</span>/&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--2.确认任务的方法--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"targetMethod"</span> <span class="attr">value</span>=<span class="string">"updateExportResult"</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line">	</span><br><span class="line">    <span class="comment">&lt;!--3.配置Trigger：根据时间规则，触发方法执行--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"trigger"</span> <span class="attr">class</span>=<span class="string">"org.springframework.scheduling.quartz.CronTriggerFactoryBean"</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--1.指定时间规则--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"cronExpression"</span> <span class="attr">value</span>=<span class="string">"0 0 1,9,17 * * ? *"</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--2.指定JobDetail--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"jobDetail"</span> <span class="attr">ref</span>=<span class="string">"jobDetail"</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line">	</span><br><span class="line">    <span class="comment">&lt;!--4.配置Scheduler：统一管理配置trigger--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"scheduler"</span> <span class="attr">class</span>=<span class="string">"org.springframework.scheduling.quartz.SchedulerFactoryBean"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"triggers"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">array</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">ref</span> <span class="attr">bean</span>=<span class="string">"trigger"</span>&gt;</span><span class="tag">&lt;/<span class="name">ref</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">array</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="图表报表工具-Echarts"><a href="#图表报表工具-Echarts" class="headerlink" title="图表报表工具 Echarts"></a>图表报表工具 Echarts</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>​    Echarts 是由百度前端团队开发的一款开源的基于js图形报表组件，可以流畅的运行在 PC 和移动设备上，兼容当前绝大部分浏览器，底层依赖轻量级的矢量图形库 ZRender，提供直观，交互丰富，可高度个性化定制的数据可视化图表。  </p>
+<p>2018年3月全球著名开源社区Apache宣布百度ECharts进入Apache孵化器。</p>
+<p>官网地址：<a href="https://echarts.apache.org/" target="_blank" rel="noopener">https://echarts.apache.org/</a></p>
+<h2 id="快速入门"><a href="#快速入门" class="headerlink" title="快速入门"></a>快速入门</h2><ol>
+<li>下载echarts组件</li>
+<li>html引入echarts组件</li>
+<li>div容器（宽、高）</li>
+<li>通过js初始化echarts图形报表</li>
+</ol>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"UTF-8"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>Title<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 1.引入 ECharts 文件 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"plugins/echarts/echarts.min.js"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- 2. 为 ECharts 准备一个具备大小（宽高）的 DOM --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"main"</span> <span class="attr">style</span>=<span class="string">"width: 600px;height:400px;"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span></span><br><span class="line"><span class="actionscript">    <span class="comment">// 基于准备好的dom，初始化echarts实例</span></span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> myChart = echarts.init(<span class="built_in">document</span>.getElementById(<span class="string">'main'</span>));</span></span><br><span class="line"></span><br><span class="line"><span class="actionscript">    <span class="comment">// 指定图表的配置项和数据</span></span></span><br><span class="line"><span class="actionscript">    <span class="keyword">var</span> option = &#123;</span></span><br><span class="line">        title: &#123;</span><br><span class="line"><span class="actionscript">            text: <span class="string">'ECharts 入门示例'</span></span></span><br><span class="line">        &#125;,</span><br><span class="line">        tooltip: &#123;&#125;,</span><br><span class="line">        legend: &#123;</span><br><span class="line"><span class="actionscript">            data:[<span class="string">'销量'</span>]</span></span><br><span class="line">        &#125;,</span><br><span class="line">        xAxis: &#123;</span><br><span class="line"><span class="actionscript">            data: [<span class="string">"衬衫"</span>,<span class="string">"羊毛衫"</span>,<span class="string">"雪纺衫"</span>,<span class="string">"裤子"</span>,<span class="string">"高跟鞋"</span>,<span class="string">"袜子"</span>]</span></span><br><span class="line">        &#125;,</span><br><span class="line">        yAxis: &#123;&#125;,</span><br><span class="line">        series: [&#123;</span><br><span class="line"><span class="actionscript">            name: <span class="string">'销量'</span>,</span></span><br><span class="line"><span class="actionscript">            type: <span class="string">'bar'</span>,</span></span><br><span class="line">            data: [5, 20, 36, 10, 10, 201]</span><br><span class="line">        &#125;]</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line"><span class="actionscript">    <span class="comment">// 使用刚指定的配置项和数据显示图表。</span></span></span><br><span class="line">    myChart.setOption(option);</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>==我们学习echarts发现基于快速入门的代码，只需要修改option数据，就可以完成其他的图表展示了==</p>
+<p><img data-src="/assets/image-20201021101534728.png" alt="image-20201021101534728"></p>
+<h1 id="统计分析模块"><a href="#统计分析模块" class="headerlink" title="统计分析模块"></a>统计分析模块</h1><h2 id="需求说明"><a href="#需求说明" class="headerlink" title="需求说明"></a>需求说明</h2><ul>
+<li>厂家销售统计 （统计每个厂家的销售额）</li>
+<li>产品的销量排行榜（统计产品销售数量前10名厂家）</li>
+<li>系统访问压力图（统计每个小时访问系统的人员数量）</li>
+</ul>
+<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h3 id="架构图"><a href="#架构图" class="headerlink" title="架构图"></a>架构图</h3><p><img data-src="/assets/image-20200707231144692.png" alt="image-20200707231144692"> </p>
+<h3 id="创建模块-建立依赖"><a href="#创建模块-建立依赖" class="headerlink" title="创建模块,建立依赖"></a>创建模块,建立依赖</h3><p><img data-src="/assets/image-20200707231646308.png" alt="image-20200707231144692"> </p>
+<h3 id="复制代码"><a href="#复制代码" class="headerlink" title="复制代码"></a>复制代码</h3><p><img data-src="/assets/image-20200707232340454.png" alt="image-20200707231144692"></p>
+<h3 id="复制配置文件"><a href="#复制配置文件" class="headerlink" title="复制配置文件"></a>复制配置文件</h3><p><img data-src="/assets/image-20200707232545527.png" alt="image-20200707232545527"> </p>
+<h3 id="添加启动文件"><a href="#添加启动文件" class="headerlink" title="添加启动文件"></a>添加启动文件</h3><p><img data-src="/assets/image-20200707233356651.png" alt="image-20200707233356651"> </p>
+<h3 id="实现页面跳转"><a href="#实现页面跳转" class="headerlink" title="实现页面跳转"></a>实现页面跳转</h3><p>在<code>export_manager_web</code>模块的<code>com.itheima.web.controller.stat</code>包下建立<code>StatController</code>类            </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/stat"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StatController</span> <span class="keyword">extends</span> <span class="title">BaseController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Reference</span></span><br><span class="line">    <span class="keyword">private</span> StatService statService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/toCharts"</span>, name = <span class="string">"跳转图形页面"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toCharts</span><span class="params">(String chartsType)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"/stat/stat-"</span> + chartsType;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="访问测试-略"><a href="#访问测试-略" class="headerlink" title="访问测试(略)"></a>访问测试(略)</h3><h2 id="厂家销售统计"><a href="#厂家销售统计" class="headerlink" title="厂家销售统计"></a>厂家销售统计</h2><h3 id="StatController"><a href="#StatController" class="headerlink" title="StatController"></a>StatController</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ResponseBody</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(value = <span class="string">"/factoryCharts"</span>, name = <span class="string">"厂家销量统计"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> List&lt;Map&gt; <span class="title">factoryCharts</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> statService.findFactoryCharts(getCompanyId());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="StatDao-xml"><a href="#StatDao-xml" class="headerlink" title="StatDao.xml"></a>StatDao.xml</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findFactoryCharts"</span> <span class="attr">resultType</span>=<span class="string">"java.util.Map"</span>&gt;</span></span><br><span class="line">    SELECT factory_name AS `name`,SUM(amount) AS `value`</span><br><span class="line">        FROM `co_contract_product`</span><br><span class="line">        WHERE company_id = #&#123;companyId&#125;</span><br><span class="line">        GROUP BY factory_name</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="stat-factory-jsp"><a href="#stat-factory-jsp" class="headerlink" title="stat-factory.jsp"></a>stat-factory.jsp</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">&lt;script type=<span class="string">"text/javascript"</span>&gt;</span><br><span class="line">    <span class="comment">// 基于准备好的dom，初始化echarts实例</span></span><br><span class="line">    <span class="keyword">var</span> myChart = echarts.init(document.getElementById(<span class="string">'main'</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 指定图表的配置项和数据</span></span><br><span class="line">    $.get(<span class="string">'/stat/factoryCharts.do'</span>).done(function (data) &#123;</span><br><span class="line">        <span class="keyword">var</span> titles = [];</span><br><span class="line">        <span class="keyword">for</span> (let e of data) &#123;</span><br><span class="line">            titles.push(e.name);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 使用刚指定的配置项和数据显示图表。</span></span><br><span class="line">        myChart.setOption(&#123;</span><br><span class="line">            title: &#123;</span><br><span class="line">                text: <span class="string">'厂家销售统计'</span>,</span><br><span class="line">                subtext: <span class="string">''</span>,</span><br><span class="line">                x: <span class="string">'center'</span></span><br><span class="line">            &#125;,</span><br><span class="line">            legend: &#123;</span><br><span class="line">                orient: <span class="string">'vertical'</span>,</span><br><span class="line">                left: <span class="string">'left'</span>,</span><br><span class="line">                data: titles</span><br><span class="line">            &#125;,</span><br><span class="line">            tooltip: &#123;</span><br><span class="line">                trigger: <span class="string">'item'</span>,</span><br><span class="line">                formatter: <span class="string">"&#123;a&#125; &lt;br/&gt;&#123;b&#125; : &#123;c&#125; (&#123;d&#125;%)"</span></span><br><span class="line">            &#125;,</span><br><span class="line">            series: [</span><br><span class="line">                &#123;</span><br><span class="line">                    name: <span class="string">'访问来源'</span>,</span><br><span class="line">                    type: <span class="string">'pie'</span>,</span><br><span class="line">                    radius: <span class="string">'55%'</span>,</span><br><span class="line">                    center: [<span class="string">'50%'</span>, <span class="string">'60%'</span>],</span><br><span class="line">                    data: data,</span><br><span class="line">                    itemStyle: &#123;</span><br><span class="line">                        emphasis: &#123;</span><br><span class="line">                            shadowBlur: <span class="number">10</span>,</span><br><span class="line">                            shadowOffsetX: <span class="number">0</span>,</span><br><span class="line">                            shadowColor: <span class="string">'rgba(0, 0, 0, 0.5)'</span></span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            ]</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="产品的销量排行榜"><a href="#产品的销量排行榜" class="headerlink" title="产品的销量排行榜"></a>产品的销量排行榜</h2><h3 id="StatController-1"><a href="#StatController-1" class="headerlink" title="StatController"></a>StatController</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ResponseBody</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(value = <span class="string">"/sellCharts"</span>, name = <span class="string">"产品销售统计"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> List&lt;Map&gt; <span class="title">sellCharts</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> statService.findSellCharts(getCompanyId());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="StatDao-xml-1"><a href="#StatDao-xml-1" class="headerlink" title="StatDao.xml"></a>StatDao.xml</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findSellCharts"</span> <span class="attr">resultType</span>=<span class="string">"java.util.Map"</span>&gt;</span></span><br><span class="line">    SELECT product_no as `name` , SUM(cnumber) AS `value`</span><br><span class="line">        FROM `co_contract_product`</span><br><span class="line">        WHERE company_id = #&#123;companyId&#125;</span><br><span class="line">        GROUP BY product_no</span><br><span class="line">        ORDER BY `value` DESC</span><br><span class="line">        LIMIT 10</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="stat-sell-jsp"><a href="#stat-sell-jsp" class="headerlink" title="stat-sell.jsp"></a>stat-sell.jsp</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">&lt;script type=<span class="string">"text/javascript"</span>&gt;</span><br><span class="line">    <span class="comment">// 基于准备好的dom，初始化echarts实例</span></span><br><span class="line">    <span class="keyword">var</span> myChart = echarts.init(document.getElementById(<span class="string">'main'</span>));</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    $.get(<span class="string">'/stat/sellCharts.do'</span>).done(function (data) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> titles = [];</span><br><span class="line">        <span class="keyword">var</span> values = [];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (let e of data) &#123;</span><br><span class="line">            titles.push(e.name);</span><br><span class="line">            values.push(e.value);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 使用刚指定的配置项和数据显示图表。</span></span><br><span class="line">        myChart.setOption(</span><br><span class="line">            option = &#123;</span><br><span class="line">                title: &#123;</span><br><span class="line">                    left: <span class="string">'center'</span>,</span><br><span class="line">                    text: <span class="string">'产品销量排行'</span>,</span><br><span class="line">                &#125;,</span><br><span class="line">                xAxis: &#123;</span><br><span class="line">                    type: <span class="string">'category'</span>,</span><br><span class="line">                    data: titles,</span><br><span class="line">                    axisLabel: &#123;</span><br><span class="line">                        rotate: <span class="number">70</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;,</span><br><span class="line">                yAxis: &#123;</span><br><span class="line">                    type: <span class="string">'value'</span></span><br><span class="line">                &#125;,</span><br><span class="line">                series: [&#123;</span><br><span class="line">                    data: values,</span><br><span class="line">                    type: <span class="string">'bar'</span></span><br><span class="line">                &#125;]</span><br><span class="line">            &#125;</span><br><span class="line">        )</span><br><span class="line">    &#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="系统访问压力图"><a href="#系统访问压力图" class="headerlink" title="系统访问压力图"></a>系统访问压力图</h2><h3 id="StatController-2"><a href="#StatController-2" class="headerlink" title="StatController"></a>StatController</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ResponseBody</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(value = <span class="string">"/onlineCharts"</span>, name = <span class="string">"在线人数统计"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> List&lt;Map&gt; <span class="title">onlineCharts</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> statService.findOnlineCharts(getCompanyId());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="StatDao-xml-2"><a href="#StatDao-xml-2" class="headerlink" title="StatDao.xml"></a>StatDao.xml</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--系统访问压力图--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findOnlineCharts"</span> <span class="attr">resultType</span>=<span class="string">"java.util.Map"</span>&gt;</span></span><br><span class="line">    SELECT a.A1 AS `name`,IFNULL(b.`value`,0) AS `value`</span><br><span class="line">        FROM `st_online_info` AS a</span><br><span class="line">        LEFT JOIN</span><br><span class="line">            (SELECT DATE_FORMAT(`time`,"%H") AS  mytime,COUNT(1) AS `value` FROM `st_sys_log`</span><br><span class="line">            WHERE company_id = #&#123;companyId&#125;</span><br><span class="line">            GROUP BY mytime) AS b</span><br><span class="line">        ON a.A1 = b.mytime</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="stat-online-jsp"><a href="#stat-online-jsp" class="headerlink" title="stat-online.jsp"></a>stat-online.jsp</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">&lt;script type=<span class="string">"text/javascript"</span>&gt;</span><br><span class="line">    <span class="comment">// 基于准备好的dom，初始化echarts实例</span></span><br><span class="line">    <span class="keyword">var</span> myChart = echarts.init(document.getElementById(<span class="string">'main'</span>));</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    $.get(<span class="string">'/stat/sellCharts.do'</span>).done(function (data) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> titles = [];</span><br><span class="line">        <span class="keyword">var</span> values = [];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (let e of data) &#123;</span><br><span class="line">            titles.push(e.name);</span><br><span class="line">            values.push(e.value);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 使用刚指定的配置项和数据显示图表。</span></span><br><span class="line">        myChart.setOption(</span><br><span class="line">            option = &#123;</span><br><span class="line">                title: &#123;</span><br><span class="line">                    left: <span class="string">'center'</span>,</span><br><span class="line">                    text: <span class="string">'产品销量排行'</span>,</span><br><span class="line">                &#125;,</span><br><span class="line">                xAxis: &#123;</span><br><span class="line">                    type: <span class="string">'category'</span>,</span><br><span class="line">                    data: titles,</span><br><span class="line">                    axisLabel: &#123;</span><br><span class="line">                        rotate: <span class="number">70</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;,</span><br><span class="line">                yAxis: &#123;</span><br><span class="line">                    type: <span class="string">'value'</span></span><br><span class="line">                &#125;,</span><br><span class="line">                series: [&#123;</span><br><span class="line">                    data: values,</span><br><span class="line">                    type: <span class="string">'bar'</span></span><br><span class="line">                &#125;]</span><br><span class="line">            &#125;</span><br><span class="line">        )</span><br><span class="line">    &#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="发送邮件"><a href="#发送邮件" class="headerlink" title="发送邮件"></a>发送邮件</h1><h2 id="邮件传输的过程"><a href="#邮件传输的过程" class="headerlink" title="邮件传输的过程"></a>邮件传输的过程</h2><ul>
+<li><p>SMTP邮件服务器：发送邮件</p>
+</li>
+<li><p>POP3/IMAP邮件服务器：接收邮件</p>
+<p>  <img data-src="/assets/image-20200811124725610.png" alt="image-20200811124725610"> </p>
+</li>
+</ul>
+<p>POP3/IMAP对比:</p>
+<p><img data-src="/assets/image-20200908210036559.png" alt=""> </p>
+<h2 id="发送邮件准备工作"><a href="#发送邮件准备工作" class="headerlink" title="发送邮件准备工作"></a>发送邮件准备工作</h2><h3 id="引入坐标-已加入"><a href="#引入坐标-已加入" class="headerlink" title="引入坐标(已加入)"></a>引入坐标(已加入)</h3><p><img data-src="/assets/image-20200708092122257.png" alt="image-20200708092122257"> </p>
+<h3 id="申请授权码"><a href="#申请授权码" class="headerlink" title="申请授权码"></a>申请授权码</h3><p><img data-src="/assets/image-20200708094441079.png" alt="image-20200708094441079"> </p>
+<h3 id="加入工具类-并修改"><a href="#加入工具类-并修改" class="headerlink" title="加入工具类,并修改"></a>加入工具类,并修改</h3><p><img data-src="/assets/image-20200708093243089.png" alt="image-20200708093243089"> </p>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p><img data-src="/assets/image-20200708095518203.png" alt="image-20200708095518203"> </p>
+<h2 id="实现发送邮件功能"><a href="#实现发送邮件功能" class="headerlink" title="实现发送邮件功能"></a>实现发送邮件功能</h2><p>修改<code>UserController</code>，添加保存用户后发送一封邮件的功能</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping</span>(value = <span class="string">"/edit"</span>, name = <span class="string">"用户新增或编辑"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">edit</span><span class="params">(User user)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//如果传入的密码不是空,加密</span></span><br><span class="line">    String oldPassword = user.getPassword();</span><br><span class="line">    <span class="keyword">if</span> (StringUtils.isNotEmpty(oldPassword)) &#123;</span><br><span class="line">        String newPassword = <span class="keyword">new</span> Md5Hash(oldPassword, user.getEmail(), <span class="number">2</span>).toString();</span><br><span class="line">        user.setPassword(newPassword);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (StringUtils.isEmpty(user.getId())) &#123;</span><br><span class="line">        <span class="comment">//1. 设置主键</span></span><br><span class="line">        user.setId(UUID.randomUUID().toString());</span><br><span class="line"></span><br><span class="line">        <span class="comment">//2. 设置企业信息</span></span><br><span class="line">        user.setCompanyId(getCompanyId());</span><br><span class="line">        user.setCompanyName(getCompanyName());</span><br><span class="line"></span><br><span class="line">        <span class="comment">//3 用户保存成功</span></span><br><span class="line">        userService.save(user);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//4 开始发送邮件</span></span><br><span class="line">        String to = user.getEmail();</span><br><span class="line">        String title = <span class="string">"saas平台--用户新增成功"</span>;</span><br><span class="line">        String content = <span class="string">"恭喜您,您的账号已经在saas平台开通成功,请使用当前邮箱作用账号,使用"</span> + oldPassword + <span class="string">"作为密码进行登录"</span>;</span><br><span class="line">        MailUtil.sendMail(to, title, content);</span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        userService.update(user);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//重定向到list方法</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">"redirect:/system/user/list.do"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="发送邮件功能问题分析"><a href="#发送邮件功能问题分析" class="headerlink" title="发送邮件功能问题分析"></a>发送邮件功能问题分析</h2><p><img data-src="/assets/image-20201021151435733.png" alt="image-20201021151435733"> </p>
+
+    </div>
+
+    
+    
+    
+    
+    <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束 <i class="fa fa-heart"></i> 感谢阅读-------------</div>
+
+    
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/images/wechat_channel.jpg">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Echarts/" rel="tag"><i class="fa fa-tag"></i> Echarts</a>
+              <a href="/tags/%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/" rel="tag"><i class="fa fa-tag"></i> 发送邮件</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/20/WebService-ApacheCXF-%E6%89%93%E6%96%AD%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3/" rel="prev" title="WebService&ApacheCXF&打断设计思想">
+      <i class="fa fa-chevron-left"></i> WebService&ApacheCXF&打断设计思想
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sunmoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">748k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:20</span>
+</div>
+
+
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script defer src="//cdn.jsdelivr.net/gh/next-theme/theme-next-three@1/three.min.js"></script>
+    <script defer src="//cdn.jsdelivr.net/gh/next-theme/theme-next-three@1/canvas_lines.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <!-- 樱花特效 -->
+  
+      <script async src="/js/src/fairyDustCursor.js"></script>
+  
+
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
+    <!-- 页面点击小红心 -->
+    <script type="text/javascript" src="/js/src/love.js"></script>
+
+
+
