@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/wind32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/wind16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-center-atom.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"sunmoon.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.3","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Git概述Git历史 Linus在1991年创建了开源的Linux，从此，世界各地的优秀程序员都在为linux的源代码开始奉献自己的一份力量  2002年以前，世界各地的志愿者把源代码文件通过diff的方式发给Linus，然后由Linus本人通过手工方式合并代码，效率非常差  2002年，BitMover公司决定将自己的商业版本控制系统BitKeeper让Linus团队免费使用，以维护Linux的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Git">
+<meta property="og:url" content="http://sunmoon.com/2020/10/24/Git/index.html">
+<meta property="og:site_name" content="清风的博客">
+<meta property="og:description" content="Git概述Git历史 Linus在1991年创建了开源的Linux，从此，世界各地的优秀程序员都在为linux的源代码开始奉献自己的一份力量  2002年以前，世界各地的志愿者把源代码文件通过diff的方式发给Linus，然后由Linus本人通过手工方式合并代码，效率非常差  2002年，BitMover公司决定将自己的商业版本控制系统BitKeeper让Linus团队免费使用，以维护Linux的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://sunmoon.com/assets/1582022666115.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20201024085844872.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717153615947.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717154340992.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717155019636.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717155536087.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717155652923.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717155952630.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717160349865.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717160434881.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717161020931.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717161259603.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717161548368.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717161828922.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717164905847.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717201147718.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717202436106.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717203200332.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717204313603.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200717205156485.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719083258106.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719084642812.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719091754184.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719093023113.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719093330699.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719093558066.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719094642199.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719095547661.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719101831458.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719101812440.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719102238266.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719102350957.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719103324250.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719103830225.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719103936088.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719104421532.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719110721223.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719111106434.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719111354844.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719112154085.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719115701896.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200912115027605.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200912120113487.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719123852392-1603507027188.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719130659471.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719124315493.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200913104149636.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719152120310.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719152554359.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719152943235.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200630115406801.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200630115750447.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719160916901.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719161312710.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200719161533231.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20201024111933903.png">
+<meta property="article:published_time" content="2020-10-24T11:13:50.000Z">
+<meta property="article:modified_time" content="2020-10-24T11:19:27.738Z">
+<meta property="article:author" content="Sunmoon">
+<meta property="article:tag" content="Git">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://sunmoon.com/assets/1582022666115.png">
+
+<link rel="canonical" href="http://sunmoon.com/2020/10/24/Git/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Git | 清风的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before, .use-motion .logo-line-after {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="清风的博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line-before"></i>
+      <h1 class="site-title">清风的博客</h1>
+      <i class="logo-line-after"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">山水有相逢，山不动，水不停</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Git概述"><span class="nav-number">1.</span> <span class="nav-text">Git概述</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Git历史"><span class="nav-number">1.1.</span> <span class="nav-text">Git历史</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Git和SVN区别"><span class="nav-number">1.2.</span> <span class="nav-text">Git和SVN区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Git工作流程"><span class="nav-number">1.3.</span> <span class="nav-text">Git工作流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Git的安装"><span class="nav-number">2.</span> <span class="nav-text">Git的安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#软件下载"><span class="nav-number">2.1.</span> <span class="nav-text">软件下载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Git服务器安装"><span class="nav-number">2.2.</span> <span class="nav-text">Git服务器安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Git客户端安装"><span class="nav-number">2.3.</span> <span class="nav-text">Git客户端安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#启动安装程序"><span class="nav-number">2.3.1.</span> <span class="nav-text">启动安装程序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#运行首次启动向导"><span class="nav-number">2.3.2.</span> <span class="nav-text">运行首次启动向导</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#语言选择"><span class="nav-number">2.3.3.</span> <span class="nav-text">语言选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置git-exe位置"><span class="nav-number">2.3.4.</span> <span class="nav-text">配置git.exe位置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置名称和邮箱"><span class="nav-number">2.3.5.</span> <span class="nav-text">配置名称和邮箱</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装完成"><span class="nav-number">2.3.6.</span> <span class="nav-text">安装完成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重启电脑"><span class="nav-number">2.3.7.</span> <span class="nav-text">重启电脑</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#客户端汉化"><span class="nav-number">2.4.</span> <span class="nav-text">客户端汉化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装汉化包"><span class="nav-number">2.4.1.</span> <span class="nav-text">安装汉化包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#中文语言配置"><span class="nav-number">2.4.2.</span> <span class="nav-text">中文语言配置</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Git操作本地仓库"><span class="nav-number">3.</span> <span class="nav-text">Git操作本地仓库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#创建本地仓库"><span class="nav-number">3.1.</span> <span class="nav-text">创建本地仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建文件，并执行添加操作"><span class="nav-number">3.2.</span> <span class="nav-text">创建文件，并执行添加操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#提交文件到本地仓库"><span class="nav-number">3.3.</span> <span class="nav-text">提交文件到本地仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查看历史版本"><span class="nav-number">3.4.</span> <span class="nav-text">查看历史版本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#删除文件"><span class="nav-number">3.5.</span> <span class="nav-text">删除文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#忽略文件"><span class="nav-number">3.6.</span> <span class="nav-text">忽略文件</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Git操作远程仓库"><span class="nav-number">4.</span> <span class="nav-text">Git操作远程仓库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#准备工作"><span class="nav-number">4.1.</span> <span class="nav-text">准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#注册码云"><span class="nav-number">4.1.1.</span> <span class="nav-text">注册码云</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建仓库"><span class="nav-number">4.1.2.</span> <span class="nav-text">创建仓库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#仓库连接协议"><span class="nav-number">4.1.3.</span> <span class="nav-text">仓库连接协议</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基于SSH协议的仓库操作"><span class="nav-number">4.2.</span> <span class="nav-text">基于SSH协议的仓库操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#本地电脑生成秘钥对"><span class="nav-number">4.2.1.</span> <span class="nav-text">本地电脑生成秘钥对</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#将公钥复制到gitee中"><span class="nav-number">4.2.2.</span> <span class="nav-text">将公钥复制到gitee中</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置小乌龟开启ssh认证协议"><span class="nav-number">4.2.3.</span> <span class="nav-text">配置小乌龟开启ssh认证协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#克隆远程仓库到本地"><span class="nav-number">4.2.4.</span> <span class="nav-text">克隆远程仓库到本地</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在本地仓库中添加文件"><span class="nav-number">4.2.5.</span> <span class="nav-text">在本地仓库中添加文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#将文件推送到远程仓库"><span class="nav-number">4.2.6.</span> <span class="nav-text">将文件推送到远程仓库</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码冲突"><span class="nav-number">4.3.</span> <span class="nav-text">代码冲突</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#模拟冲突"><span class="nav-number">4.3.1.</span> <span class="nav-text">模拟冲突</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#冲突解决"><span class="nav-number">4.3.2.</span> <span class="nav-text">冲突解决</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#执行拉取操作"><span class="nav-number">4.3.2.1.</span> <span class="nav-text">执行拉取操作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#编辑冲突"><span class="nav-number">4.3.2.2.</span> <span class="nav-text">编辑冲突</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#提交并推送修改"><span class="nav-number">4.3.2.3.</span> <span class="nav-text">提交并推送修改</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#IDEA中使用Git"><span class="nav-number">5.</span> <span class="nav-text">IDEA中使用Git</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本操作"><span class="nav-number">5.1.</span> <span class="nav-text">基本操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#在idea中配置Git"><span class="nav-number">5.1.1.</span> <span class="nav-text">在idea中配置Git</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在idea中配置git管理"><span class="nav-number">5.1.2.</span> <span class="nav-text">在idea中配置git管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在idea中配置忽略文件"><span class="nav-number">5.1.3.</span> <span class="nav-text">在idea中配置忽略文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#提交代码到本地仓库（commit）"><span class="nav-number">5.1.4.</span> <span class="nav-text">提交代码到本地仓库（commit）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重新创建远程仓库"><span class="nav-number">5.1.5.</span> <span class="nav-text">重新创建远程仓库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#推送代码到远程仓库（push）"><span class="nav-number">5.1.6.</span> <span class="nav-text">推送代码到远程仓库（push）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码冲突-1"><span class="nav-number">5.2.</span> <span class="nav-text">代码冲突</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#模拟冲突-1"><span class="nav-number">5.2.1.</span> <span class="nav-text">模拟冲突</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决冲突"><span class="nav-number">5.2.2.</span> <span class="nav-text">解决冲突</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Git分支管理"><span class="nav-number">6.</span> <span class="nav-text">Git分支管理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#创建分支"><span class="nav-number">6.1.</span> <span class="nav-text">创建分支</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#在分支上进行代码的开发"><span class="nav-number">6.2.</span> <span class="nav-text">在分支上进行代码的开发</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将代码合并到主分支"><span class="nav-number">6.3.</span> <span class="nav-text">将代码合并到主分支</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分支类型"><span class="nav-number">6.4.</span> <span class="nav-text">分支类型</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sunmoon"
+      src="/images/sunmoon.jpg">
+  <p class="site-author-name" itemprop="name">Sunmoon</p>
+  <div class="site-description" itemprop="description">阴晴雨雪，月圆月缺</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">58</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">167</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Sunmoon76" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Sunmoon76" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/gongleman9016/" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;gongleman9016&#x2F;" rel="noopener" target="_blank"><i class="fa fa-cube fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Sunmoon76" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://sunmoon.com/2020/10/24/Git/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/sunmoon.jpg">
+      <meta itemprop="name" content="Sunmoon">
+      <meta itemprop="description" content="阴晴雨雪，月圆月缺">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="清风的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Git
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-10-24 19:13:50 / 修改时间：19:19:27" itemprop="dateCreated datePublished" datetime="2020-10-24T19:13:50+08:00">2020-10-24</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%85%B6%E4%BB%96/" itemprop="url" rel="index"><span itemprop="name">其他</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Git概述"><a href="#Git概述" class="headerlink" title="Git概述"></a>Git概述</h1><h2 id="Git历史"><a href="#Git历史" class="headerlink" title="Git历史"></a>Git历史</h2><ul>
+<li><p>Linus在1991年创建了开源的Linux，从此，世界各地的优秀程序员都在为linux的源代码开始奉献自己的一份力量</p>
+</li>
+<li><p>2002年以前，世界各地的志愿者把源代码文件通过diff的方式发给Linus，然后由Linus本人通过手工方式合并代码，效率非常差</p>
+</li>
+<li><p>2002年，BitMover公司决定将自己的商业版本控制系统BitKeeper让Linus团队免费使用，以维护Linux的源代码</p>
+</li>
+<li><p>2005年，Linus团队的一个小伙试图破解BitKeeper的协议，被发现了，于是BitMover公司怒了，收回了Linux社区的免费使用权</p>
+</li>
+<li><p>接下来，Linus花了两周时间自己用C写了一个分布式版本控制系统，这就是Git！一个月之内，Linux系统的源码已经由Git管理了！</p>
+</li>
+<li><p>2008年，基于的Git的GitHub网站上线了，它为开源项目免费提供Git存储，无数开源项目开始迁移至GitHub</p>
+</li>
+<li><p>现在，Git已经成为最流行的分布式版本控制系统</p>
+</li>
+</ul>
+<p><img data-src="/assets/1582022666115.png" alt="1582022666115"> </p>
+<a id="more"></a>
+
+<h2 id="Git和SVN区别"><a href="#Git和SVN区别" class="headerlink" title="Git和SVN区别"></a>Git和SVN区别</h2><p><strong>SVN是集中式的版本控制系统，Git是分布式版本控制系统</strong></p>
+<p><img data-src="/assets/image-20201024085844872.png" alt="image-20201024085844872"></p>
+<h2 id="Git工作流程"><a href="#Git工作流程" class="headerlink" title="Git工作流程"></a>Git工作流程</h2><p><img data-src="/assets/image-20200717153615947.png" alt="image-20200717153615947"> </p>
+<p>一般工作流程如下：</p>
+<p>1．创建本地仓库（或者从远程仓库中克隆资源作为本地仓库）</p>
+<p>2．从本地仓库中checkout代码然后进行代码修改（自动执行）</p>
+<p>3．先将代码提交到暂存区（其实就是将自己写的代码添加到git管理的意思）</p>
+<p>4．提交代码到本地仓库，本地仓库中保存修改的各个历史版本</p>
+<p>5．在修改完成后，需要和团队成员共享代码时，可以将代码push到远程仓库</p>
+<h1 id="Git的安装"><a href="#Git的安装" class="headerlink" title="Git的安装"></a>Git的安装</h1><h2 id="软件下载"><a href="#软件下载" class="headerlink" title="软件下载"></a>软件下载</h2><p>服务端下载地址：<a href="https://git-scm.com/download" target="_blank" rel="noopener">https://git-scm.com/download</a></p>
+<p>客户端下载地址：<a href="https://tortoisegit.org/download" target="_blank" rel="noopener">https://tortoisegit.org/download</a></p>
+<p><img data-src="/assets/image-20200717154340992.png" alt="image-20200717154340992"> </p>
+<h2 id="Git服务器安装"><a href="#Git服务器安装" class="headerlink" title="Git服务器安装"></a>Git服务器安装</h2><p>双击启动安装程序，选择一个没有中文的目录，剩下的选项全部采用默认值，一路下一步，直到安装结束</p>
+<p>==注意：安装的位置记录一下==</p>
+<p><img data-src="/assets/image-20200717155019636.png" alt="image-20200717155019636"> </p>
+<h2 id="Git客户端安装"><a href="#Git客户端安装" class="headerlink" title="Git客户端安装"></a>Git客户端安装</h2><h3 id="启动安装程序"><a href="#启动安装程序" class="headerlink" title="启动安装程序"></a>启动安装程序</h3><p>双击启动安装程序，选择一个没有中文的目录，剩下的选项全部采用默认值，一路下一步，直到安装结束</p>
+<p><img data-src="/assets/image-20200717155536087.png" alt="image-20200717155536087"> </p>
+<h3 id="运行首次启动向导"><a href="#运行首次启动向导" class="headerlink" title="运行首次启动向导"></a>运行首次启动向导</h3><p><img data-src="/assets/image-20200717155652923.png" alt="image-20200717155652923"> </p>
+<h3 id="语言选择"><a href="#语言选择" class="headerlink" title="语言选择"></a>语言选择</h3><p>Language选择English，点击下一步</p>
+<p><img data-src="/assets/image-20200717155952630.png" alt="image-20200717155952630"> </p>
+<h3 id="配置git-exe位置"><a href="#配置git-exe位置" class="headerlink" title="配置git.exe位置"></a>配置git.exe位置</h3><p>再刚才安装git软件的时候，记录下了其安装位置， 我们需要在这里指定一下</p>
+<p><img data-src="/assets/image-20200717160349865.png" alt="image-20200717160349865"> </p>
+<h3 id="配置名称和邮箱"><a href="#配置名称和邮箱" class="headerlink" title="配置名称和邮箱"></a>配置名称和邮箱</h3><p>这些信息会在后期提交代码的时候，作为身份信息被提交到版本库</p>
+<p>name写自己名字的拼音, 邮箱写自己的真实邮箱</p>
+<p><img data-src="/assets/image-20200717160434881.png" alt="image-20200717160434881"> </p>
+<h3 id="安装完成"><a href="#安装完成" class="headerlink" title="安装完成"></a>安装完成</h3><p><img data-src="/assets/image-20200717161020931.png" alt="image-20200717161020931"> </p>
+<h3 id="重启电脑"><a href="#重启电脑" class="headerlink" title="重启电脑"></a>重启电脑</h3><p>安装完毕之后，一定要重新启动下电脑，然后在桌面上右键，看到下面的五个按钮，代表安装成功了</p>
+<p><img data-src="/assets/image-20200717161259603.png" alt="image-20200717161259603"> </p>
+<h2 id="客户端汉化"><a href="#客户端汉化" class="headerlink" title="客户端汉化"></a>客户端汉化</h2><h3 id="安装汉化包"><a href="#安装汉化包" class="headerlink" title="安装汉化包"></a>安装汉化包</h3><p>在资料中找到客户端的汉化包，双击运行，然后一路下一步完成汉化过程</p>
+<p><img data-src="/assets/image-20200717161548368.png" alt="image-20200717161548368"> </p>
+<h3 id="中文语言配置"><a href="#中文语言配置" class="headerlink" title="中文语言配置"></a>中文语言配置</h3><p>在桌面右键，按如下进行选择，即可完成中文语言配置</p>
+<p><img data-src="/assets/image-20200717161828922.png" alt="image-20200717161828922"> </p>
+<h1 id="Git操作本地仓库"><a href="#Git操作本地仓库" class="headerlink" title="Git操作本地仓库"></a>Git操作本地仓库</h1><h2 id="创建本地仓库"><a href="#创建本地仓库" class="headerlink" title="创建本地仓库"></a>创建本地仓库</h2><p><img data-src="/assets/image-20200717164905847.png" alt="image-20200717164905847"> </p>
+<h2 id="创建文件，并执行添加操作"><a href="#创建文件，并执行添加操作" class="headerlink" title="创建文件，并执行添加操作"></a>创建文件，并执行添加操作</h2><p>注意: 添加操作， 只是让git环境识别了我们新建的文件， 但是并没有将其放入到git仓库</p>
+<p><img data-src="/assets/image-20200717201147718.png" alt="image-20200717201147718"> </p>
+<h2 id="提交文件到本地仓库"><a href="#提交文件到本地仓库" class="headerlink" title="提交文件到本地仓库"></a>提交文件到本地仓库</h2><p>提交操作的作用是将文件放到本地仓库中进行管理</p>
+<p><img data-src="/assets/image-20200717202436106.png" alt="image-20200717202436106"></p>
+<h2 id="查看历史版本"><a href="#查看历史版本" class="headerlink" title="查看历史版本"></a>查看历史版本</h2><p><img data-src="/assets/image-20200717203200332.png" alt="image-20200717203200332"> </p>
+<h2 id="删除文件"><a href="#删除文件" class="headerlink" title="删除文件"></a>删除文件</h2><p>删除文件需要做两件事:1) 删除文件  2) 提交更新</p>
+<p><img data-src="/assets/image-20200717204313603.png" alt="image-20200717204313603"></p>
+<h2 id="忽略文件"><a href="#忽略文件" class="headerlink" title="忽略文件"></a>忽略文件</h2><p>在特定情况下，我们不希望自己的某些文件被git管理，这时候，我们就要设置git忽略掉此文件</p>
+<p><img data-src="/assets/image-20200717205156485.png" alt="image-20200717205156485"> </p>
+<h1 id="Git操作远程仓库"><a href="#Git操作远程仓库" class="headerlink" title="Git操作远程仓库"></a>Git操作远程仓库</h1><p>现在我们已经在本地创建了一个Git仓库，但是这只能满足我们单人开发，如果想要团队协作，还需要一个远程仓库</p>
+<p>目前比较流行的远程仓库，有下面这两个：</p>
+<ul>
+<li>github：<a href="https://github.com" target="_blank" rel="noopener">https://github.com</a></li>
+<li>码云 ：<a href="https://gitee.com" target="_blank" rel="noopener">https://gitee.com</a></li>
+</ul>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><h3 id="注册码云"><a href="#注册码云" class="headerlink" title="注册码云"></a>注册码云</h3><p><img data-src="/assets/image-20200719083258106.png" alt="image-20200719083258106"> </p>
+<h3 id="创建仓库"><a href="#创建仓库" class="headerlink" title="创建仓库"></a>创建仓库</h3><p><img data-src="/assets/image-20200719084642812.png" alt="image-20200719084642812"> </p>
+<h3 id="仓库连接协议"><a href="#仓库连接协议" class="headerlink" title="仓库连接协议"></a>仓库连接协议</h3><p>git仓库支持两种连接协议：</p>
+<ul>
+<li>HTTPS：是以安全为目标的HTTP通道，在HTTP的基础上通过传输加密和身份认证保证了传输过程的安全性</li>
+<li>SSH：安全外壳协议，通过密钥对方式对传输的数据进行加密，实现免密登录</li>
+</ul>
+<p><img data-src="/assets/image-20200719091754184.png" alt="image-20200719091754184"> </p>
+<p>复制git的地址（一定注意：这个地址是SSH的，以git开头，千万不要复制成HTTPS的）</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git@gitee.com:xiaomingguo/saas-bk.git</span><br></pre></td></tr></table></figure>
+
+<h2 id="基于SSH协议的仓库操作"><a href="#基于SSH协议的仓库操作" class="headerlink" title="基于SSH协议的仓库操作"></a>基于SSH协议的仓库操作</h2><h3 id="本地电脑生成秘钥对"><a href="#本地电脑生成秘钥对" class="headerlink" title="本地电脑生成秘钥对"></a>本地电脑生成秘钥对</h3><p>使用<code>cmd</code>命令启动dos窗口，然后输入<code>ssh-keygen -t rsa</code>命令按回车键，然后一路回车，生成秘钥对</p>
+<p><img data-src="/assets/image-20200719093023113.png" alt="image-20200719093023113"> </p>
+<h3 id="将公钥复制到gitee中"><a href="#将公钥复制到gitee中" class="headerlink" title="将公钥复制到gitee中"></a>将公钥复制到gitee中</h3><p><img data-src="/assets/image-20200719093330699.png" alt="image-20200719093330699"> </p>
+<p><img data-src="/assets/image-20200719093558066.png" alt="image-20200719093558066"> </p>
+<h3 id="配置小乌龟开启ssh认证协议"><a href="#配置小乌龟开启ssh认证协议" class="headerlink" title="配置小乌龟开启ssh认证协议"></a>配置小乌龟开启ssh认证协议</h3><p><img data-src="/assets/image-20200719094642199.png" alt="image-20200719094642199"> </p>
+<h3 id="克隆远程仓库到本地"><a href="#克隆远程仓库到本地" class="headerlink" title="克隆远程仓库到本地"></a>克隆远程仓库到本地</h3><p>在本地新建一个<code>zhang</code>文件夹，然后在文件夹中右键点击<code>Git克隆...</code>，填写URL（从网页中复制），点击确定</p>
+<p><img data-src="/assets/image-20200719095547661.png" alt="image-20200719095547661"> </p>
+<h3 id="在本地仓库中添加文件"><a href="#在本地仓库中添加文件" class="headerlink" title="在本地仓库中添加文件"></a>在本地仓库中添加文件</h3><p>在文件夹中新建一个hello.txt文件，并执行add–commit操作，将其添加到本地仓库</p>
+<h3 id="将文件推送到远程仓库"><a href="#将文件推送到远程仓库" class="headerlink" title="将文件推送到远程仓库"></a>将文件推送到远程仓库</h3><p><img data-src="/assets/image-20200719101831458.png" alt="image-20200719101831458"> </p>
+<p><img data-src="/assets/image-20200719101812440.png" alt="image-20200719101812440"> </p>
+<p><img data-src="/assets/image-20200719102238266.png" alt="image-20200719102238266"> </p>
+<p><img data-src="/assets/image-20200719102350957.png" alt="image-20200719102350957"> </p>
+<h2 id="代码冲突"><a href="#代码冲突" class="headerlink" title="代码冲突"></a>代码冲突</h2><h3 id="模拟冲突"><a href="#模拟冲突" class="headerlink" title="模拟冲突"></a>模拟冲突</h3><ol>
+<li><p>新建一个<code>yuan</code>文件夹，模拟另一个用户，然后将远程仓库克隆进来</p>
+</li>
+<li><p>然后在<code>zhang</code>文件夹下，修改文件内容，并执行commit–push操作，将文件推送到远程仓库</p>
+<p> <img data-src="/assets/image-20200719103324250.png" alt="image-20200719103324250"> </p>
+</li>
+<li><p>然后在<code>yuan</code>文件夹下，修改文件内容，并执行commit–push操作，将文件推送到远程仓库</p>
+<p> <img data-src="/assets/image-20200719103830225.png" alt="image-20200719103830225"> </p>
+</li>
+</ol>
+<p>此时发现，推送的过程出现问题了，这就是文件冲突，下面就来解决文件冲突</p>
+<p><img data-src="/assets/image-20200719103936088.png" alt="image-20200719103936088"> </p>
+<h3 id="冲突解决"><a href="#冲突解决" class="headerlink" title="冲突解决"></a>冲突解决</h3><h4 id="执行拉取操作"><a href="#执行拉取操作" class="headerlink" title="执行拉取操作"></a>执行拉取操作</h4><p><img data-src="/assets/image-20200719104421532.png" alt="image-20200719104421532"> </p>
+<h4 id="编辑冲突"><a href="#编辑冲突" class="headerlink" title="编辑冲突"></a>编辑冲突</h4><p><img data-src="/assets/image-20200719110721223.png" alt="image-20200719110721223"> </p>
+<p><img data-src="/assets/image-20200719111106434.png" alt="image-20200719111106434"></p>
+<h4 id="提交并推送修改"><a href="#提交并推送修改" class="headerlink" title="提交并推送修改"></a>提交并推送修改</h4><p><img data-src="/assets/image-20200719111354844.png" alt="image-20200719111354844"></p>
+<h1 id="IDEA中使用Git"><a href="#IDEA中使用Git" class="headerlink" title="IDEA中使用Git"></a>IDEA中使用Git</h1><h2 id="基本操作"><a href="#基本操作" class="headerlink" title="基本操作"></a>基本操作</h2><h3 id="在idea中配置Git"><a href="#在idea中配置Git" class="headerlink" title="在idea中配置Git"></a>在idea中配置Git</h3><p><img data-src="/assets/image-20200719112154085.png" alt="image-20200719112154085">  </p>
+<h3 id="在idea中配置git管理"><a href="#在idea中配置git管理" class="headerlink" title="在idea中配置git管理"></a>在idea中配置git管理</h3><p><img data-src="/assets/image-20200719115701896.png" alt="image-20200719115701896"> </p>
+<h3 id="在idea中配置忽略文件"><a href="#在idea中配置忽略文件" class="headerlink" title="在idea中配置忽略文件"></a>在idea中配置忽略文件</h3><p>1) 安装文件忽略插件,重启idea</p>
+<p><img data-src="/assets/image-20200912115027605.png" alt="image-20200912115027605">  </p>
+<p>2) 添加文件忽略配置文件</p>
+<p><img data-src="/assets/image-20200912120113487.png" alt="image-20200912120113487"> </p>
+<blockquote>
+<p>解释:</p>
+<p>​    .idea/           忽略.idea文件夹</p>
+<p>​    rebel.xml     忽略所有的rebel.xml文件</p>
+<p>​    *.iml             忽略所有的.iml文件</p>
+<p>​    out/             忽略out文件夹</p>
+<p>​    target/         忽略target文件夹</p>
+</blockquote>
+<h3 id="提交代码到本地仓库（commit）"><a href="#提交代码到本地仓库（commit）" class="headerlink" title="提交代码到本地仓库（commit）"></a>提交代码到本地仓库（commit）</h3><p><img data-src="/assets/image-20200719123852392-1603507027188.png" alt="image-20200719123852392"> </p>
+<h3 id="重新创建远程仓库"><a href="#重新创建远程仓库" class="headerlink" title="重新创建远程仓库"></a>重新创建远程仓库</h3><p>==注意：将当前的远程仓库删除掉，重新创建一个同名字的==</p>
+<p><img data-src="/assets/image-20200719130659471.png" alt="image-20200719130659471"> </p>
+<h3 id="推送代码到远程仓库（push）"><a href="#推送代码到远程仓库（push）" class="headerlink" title="推送代码到远程仓库（push）"></a>推送代码到远程仓库（push）</h3><p><img data-src="/assets/image-20200719124315493.png" alt="image-20200719124315493"></p>
+<p>如果上一步无法填写远程仓库,可以使用下面的方式</p>
+<p><img data-src="/assets/image-20200913104149636.png" alt="image-20200913104149636"> </p>
+<h2 id="代码冲突-1"><a href="#代码冲突-1" class="headerlink" title="代码冲突"></a>代码冲突</h2><h3 id="模拟冲突-1"><a href="#模拟冲突-1" class="headerlink" title="模拟冲突"></a>模拟冲突</h3><p><img data-src="/assets/image-20200719152120310.png" alt="image-20200719152120310"></p>
+<p>1）在idea中对pom.xml文件进行修改操作</p>
+<p>2）在本地新建一个文件夹other，然后将代码克隆一份下来，然后也修改下pom.xml</p>
+<p>3）通过小乌龟现将本地other文件夹的代码提交到远程仓库</p>
+<p>4）再通过idea将idea中的代码推送到远程仓库，再推送的过程中，就会出现下面的错误</p>
+<p><img data-src="/assets/image-20200719152554359.png" alt="image-20200719152554359"> </p>
+<p>加下来，我们点击Merge开始合并代码（解决冲突）</p>
+<h3 id="解决冲突"><a href="#解决冲突" class="headerlink" title="解决冲突"></a>解决冲突</h3><p><img data-src="/assets/image-20200719152943235.png" alt="image-20200719152943235"></p>
+<p>1）在idea中手动合并代码，解决掉冲突</p>
+<p>2）将改好代码再次向远程仓库推送</p>
+<h1 id="Git分支管理"><a href="#Git分支管理" class="headerlink" title="Git分支管理"></a>Git分支管理</h1><p>几乎所有的版本控制系统都以某种形式支持分支。 使用分支意味着你可以把你的工作从开发主线上分离开来，以免影响开发主线。</p>
+<p><img data-src="/assets/image-20200630115406801.png" alt="image-20200630115406801"> </p>
+<h2 id="创建分支"><a href="#创建分支" class="headerlink" title="创建分支"></a>创建分支</h2><p><img data-src="/assets/image-20200630115750447.png" alt="image-20200630115750447"> </p>
+<h2 id="在分支上进行代码的开发"><a href="#在分支上进行代码的开发" class="headerlink" title="在分支上进行代码的开发"></a>在分支上进行代码的开发</h2><p>接下来就可以在lucy分支上进行代码的开发了，开发完毕之后进行commit和push操作</p>
+<p><img data-src="/assets/image-20200719160916901.png" alt="image-20200719160916901"> </p>
+<h2 id="将代码合并到主分支"><a href="#将代码合并到主分支" class="headerlink" title="将代码合并到主分支"></a>将代码合并到主分支</h2><p>1） 先切换到master分支</p>
+<p><img data-src="/assets/image-20200719161312710.png" alt="image-20200719161312710"> </p>
+<p>2） 然后在master分支上将其他分支代码合并进来</p>
+<p><img data-src="/assets/image-20200719161533231.png" alt="image-20200719161533231"> </p>
+<h2 id="分支类型"><a href="#分支类型" class="headerlink" title="分支类型"></a>分支类型</h2><p><img data-src="/assets/image-20201024111933903.png" alt="image-20201024111933903"> </p>
+<p>顺序:  add——-开发—-commit到本地—–&gt;pull代码(可能出现代码冲突,  需要merge代码)——–&gt;push代码</p>
+<p>上午:  开始工作  先拉取代码  有人  推送之前一次</p>
+
+    </div>
+
+    
+    
+    
+    
+    <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束 <i class="fa fa-heart"></i> 感谢阅读-------------</div>
+
+    
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/images/wechat_channel.jpg">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Git/" rel="tag"><i class="fa fa-tag"></i> Git</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/23/RabbitMQ-SpringAMQP-PDF%E6%8A%A5%E8%A1%A8/" rel="prev" title="RabbitMQ&SpringAMQP&PDF报表">
+      <i class="fa fa-chevron-left"></i> RabbitMQ&SpringAMQP&PDF报表
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sunmoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">763k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:34</span>
+</div>
+
+
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script defer src="//cdn.jsdelivr.net/gh/next-theme/theme-next-three@1/three.min.js"></script>
+    <script defer src="//cdn.jsdelivr.net/gh/next-theme/theme-next-three@1/canvas_lines.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <!-- 樱花特效 -->
+  
+      <script async src="/js/src/fairyDustCursor.js"></script>
+  
+
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
+    <!-- 页面点击小红心 -->
+    <script type="text/javascript" src="/js/src/love.js"></script>
+
+
+
