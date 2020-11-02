@@ -16219,4 +16219,375 @@
         <tag>通用Mapper</tag>
       </tags>
   </entry>
+  <entry>
+    <title>SpringBoot高级</title>
+    <url>/2020/11/02/SpringBoot%E9%AB%98%E7%BA%A7/</url>
+    <content><![CDATA[<h1 id="1-学习SpringBoot整合常用的框架"><a href="#1-学习SpringBoot整合常用的框架" class="headerlink" title="1. 学习SpringBoot整合常用的框架"></a>1. 学习SpringBoot整合常用的框架</h1><p>我们在学习项目一时用到了很多框架比如shiro、Dubbo 、Quartz、rabbitMQ，每使用一个框架时都需要一些xml配置文件，比较麻烦，而SpringBoot在整合这些框架时就非常方便而且不用出现任何xml文件，接下来见证一下吧！ </p>
+<a id="more"></a>
+
+<h2 id="1-1-整合Thymeleaf"><a href="#1-1-整合Thymeleaf" class="headerlink" title="1.1 整合Thymeleaf"></a>1.1 整合Thymeleaf</h2><h3 id="1-1-1-需求分析"><a href="#1-1-1-需求分析" class="headerlink" title="1.1.1 需求分析"></a>1.1.1 需求分析</h3><p>现在需要把用户信息在list.html页面上展示，目前有两种思路</p>
+<ul>
+<li>思路1：直接在浏览器上访问 list.html页面，进入页面后异步加载商品数据，渲染页面</li>
+<li>思路2：将请求交给tomcat处理，在服务端完成查询数据，跳转到list.html页面</li>
+</ul>
+<p>两种方式都行，现在我们选择思路2，但是现在的页面是静态的HTML页面，静态页面中没有request域、不能使用&lt;&lt;c:foreach&gt;&gt;标签，那怎么把数据显示到静态页面上呢，答案是：可以使用Themeleaf (模板引擎)。Themeleaf是一种模板引擎，今天的资料中有提供Thymeleaf的学习。</p>
+<p>下面我们就用Thymeleaf把数据显示到静态页面上</p>
+<h3 id="1-1-2-环境准备"><a href="#1-1-2-环境准备" class="headerlink" title="1.1.2 环境准备"></a>1.1.2 环境准备</h3><p>创建工程：</p>
+<p><img data-src="/assets/thymeleaf0.png" alt="thymeleaf0">    </p>
+<p>第一步：添加Themeleaf的启动器</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">"http://maven.apache.org/POM/4.0.0"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.sun<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>springboot_day02<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.3.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-thymeleaf<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">&lt;!-- 不需要在单独指定jar包版本 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">&lt;!--springboot整合jdbc--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-jdbc<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">&lt;!--指定操作的数据库--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>mysql<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mysql-connector-java<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.1.6<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">&lt;!--通用mapper整合springboot --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>tk.mybatis<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mapper-spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.5<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>编写application.yml配置文件</strong></p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">80</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">datasource:</span></span><br><span class="line">    <span class="attr">driver-class-name:</span> <span class="string">com.mysql.jdbc.Driver</span></span><br><span class="line">    <span class="attr">url:</span> <span class="string">jdbc:mysql:///springboot_db</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">    <span class="attr">password:</span> <span class="string">root</span></span><br></pre></td></tr></table></figure>
+
+<p>不需要做任何配置，启动器已经帮我们把Thymeleaf的视图器配置完成：</p>
+<p> <img data-src="/assets/thymeleaf3.png" alt="1526435647041"></p>
+<p>而且，还配置了模板文件（html）的位置，与jsp类似的前缀+ 视图名 + 后缀风格：</p>
+<p><img data-src="/assets/thymeleaf4.png" alt="1526435706301">    </p>
+<ul>
+<li>默认前缀：<code>classpath:/templates/</code></li>
+<li>默认后缀：<code>.html</code></li>
+</ul>
+<p>所以如果我们返回视图：<code>list</code>，会指向到 <code>classpath:/templates/list.html</code></p>
+<p>第二步：把准备好的静态资源，直接放入到项目的resources下的templates和static文件夹下</p>
+<p>如下结构：</p>
+<p><img data-src="/assets/thymeleaf1.png" alt="thymeleaf1">    </p>
+<h3 id="1-1-3-实现功能"><a href="#1-1-3-实现功能" class="headerlink" title="1.1.3 实现功能"></a>1.1.3 实现功能</h3><p>第一步：在Controller、service中添加查询所有用户的方法</p>
+<p>我们重新创建一个正式的UserController代码，因为要跳转到页面，所以就不用RestController注解了</p>
+<p>UserController代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//@RestController</span></span><br><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserService userService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/findAll"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">findAll</span><span class="params">(Model model)</span></span>&#123;</span><br><span class="line">        List&lt;User&gt; list = userService.findAll();</span><br><span class="line">        model.addAttribute(<span class="string">"users"</span>,list);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"list"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/user/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">findById</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Integer id, Model model)</span>&#123;</span><br><span class="line">        User user = userService.findById(id);</span><br><span class="line">        model.addAttribute(<span class="string">"user"</span>,user);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"view"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>service实现类添加的代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserDao userDao;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> List&lt;User&gt; <span class="title">findAll</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> userDao.selectAll();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">findById</span><span class="params">(Integer id)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> userDao.selectByPrimaryKey(id);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>dao：使用通用mapper，继承BaseMapper接口</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserDao</span> <span class="keyword">extends</span> <span class="title">BaseMapper</span>&lt;<span class="title">User</span>&gt; </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第二步：查看静态页面</p>
+<p><strong>注意</strong>，把html 的名称空间，改成：</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"zh-CN"</span> <span class="attr">xmlns:th</span>=<span class="string">"http://www.thymeleaf.org"</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><img data-src="/assets/thymeleaf5.png" alt="thymeleaf5">    </p>
+<p>第三步：测试</p>
+<p>访问：<code>http://localhost/findAll</code> 和 <code>http://localhost/user/1</code></p>
+<blockquote>
+<p>略…</p>
+</blockquote>
+<h2 id="1-2-SpringBoot整合rabbitMQ"><a href="#1-2-SpringBoot整合rabbitMQ" class="headerlink" title="1.2 SpringBoot整合rabbitMQ"></a>1.2 SpringBoot整合rabbitMQ</h2><h3 id="1-2-1-需求分析"><a href="#1-2-1-需求分析" class="headerlink" title="1.2.1 需求分析"></a>1.2.1 需求分析</h3><p>创建两个springboot项目。一个用来向RabbitMQ中发送消息（生产者），一个从RabbitMQ中获取消息（消费者）</p>
+<h3 id="1-2-2-环境准备"><a href="#1-2-2-环境准备" class="headerlink" title="1.2.2 环境准备"></a>1.2.2 环境准备</h3><p>第一步：准备RabbitMQ</p>
+<p>浏览器访问：<a href="http://127.0.0.1:15672" target="_blank" rel="noopener">http://127.0.0.1:15672</a> 使用guest/guest登录，在控制创建</p>
+<p>虚拟主机: /leyou</p>
+<p>添加用户并设置密码：leyou/leyou</p>
+<p>给用户赋虚拟主机的权限:使用”leyou”账户操作”/leyou”虚拟主机、</p>
+<p>​    <img data-src="/assets/springboot%E6%95%B4%E5%90%88rabbitMQ0.png" alt="springboot整合rabbitMQ0"></p>
+<p>第二步：</p>
+<p>1、创建消费提供者项目 rabbitmq_producer</p>
+<p><img data-src="/assets/springboot%E6%95%B4%E5%90%88rabbitMQ1.png" alt="springboot整合rabbitMQ1">    </p>
+<p>2、项目中添加依赖</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.3.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--SpringBoot整合rabbitMQ--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-amqp<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--SpringBoot整合单元测试--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>3、在resources目录下添加application.yml文件，里面内容如下</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">rabbitmq:</span></span><br><span class="line">    <span class="attr">host:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span></span><br><span class="line">    <span class="attr">virtual-host:</span> <span class="string">/leyou</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">leyou</span></span><br><span class="line">    <span class="attr">password:</span> <span class="string">leyou</span></span><br></pre></td></tr></table></figure>
+
+<p>4、在com.sun下创建引导类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProducerApplication</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(ProducerApplication<span class="class">.<span class="keyword">class</span>, <span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第三步：</p>
+<p> 1、创建消费提供者项目 rabbitmq_consumer</p>
+<p><img data-src="/assets/springboot%E6%95%B4%E5%90%88rabbitMQ2.png" alt="springboot整合rabbitMQ2">    </p>
+<p> 2、3、4和rabbitmq_producer的操作一模一样！</p>
+<h3 id="1-2-3-实现功能"><a href="#1-2-3-实现功能" class="headerlink" title="1.2.3 实现功能"></a>1.2.3 实现功能</h3><p>springboot和junit整合发送消息</p>
+<p>第一步：在<strong>rabbitmq_producer</strong>中添加一个测似类<code>ProducerTest</code>类，代码如下：</p>
+<blockquote>
+<p>关键注解：<code>@RunWith(SpringRunner.class)</code>、<code>@SpringBootTest</code></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">SpringBootTest</span></span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">ProducerTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> RabbitTemplate rabbitTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//生产rabbitMQ消息</span></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendMsgTest</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">        rabbitTemplate.convertAndSend(<span class="string">"spring.boot.exchange"</span>,<span class="string">"boot.msg"</span>,<span class="string">"这是SpringBoot整合rabbitMQ发送的第一条消息..."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第二步：接收消息</p>
+<p>在<strong>rabbitmq_consumer</strong>项目中的com.sun.consumer包下添加以下代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span> <span class="comment">//将监听类交给Spring容器</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyConsumerListener</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//编写监听方法，参数就是监听的内容</span></span><br><span class="line">    <span class="meta">@RabbitListener</span>(bindings = &#123;<span class="meta">@QueueBinding</span>(value = <span class="meta">@Queue</span>(value = <span class="string">"spring.boot.test"</span>,declare = <span class="string">"true"</span>),</span><br><span class="line">                    exchange = <span class="meta">@Exchange</span>(value = <span class="string">"spring.boot.exchange"</span>,</span><br><span class="line">                    type = ExchangeTypes.TOPIC),key = <span class="string">"#.#"</span>)&#125;)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getMsg</span><span class="params">(String msg)</span></span>&#123;</span><br><span class="line">        System.out.println(msg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>第三步：测试</p>
+<p>1、先启动rabbitmq_consumer项目的引导类</p>
+<p>2、在执行rabbitmq_producer项目中的junit方法</p>
+<p><img data-src="/assets/springboot%E6%95%B4%E5%90%88rabbitMQ3.png" alt="springboot整合rabbitMQ3">    </p>
+<p>消费者端收到消息，搞定！</p>
+<h1 id="2-SpringBoot原理详细分析"><a href="#2-SpringBoot原理详细分析" class="headerlink" title="2. SpringBoot原理详细分析"></a>2. SpringBoot原理详细分析</h1><p>以上的整合中大都是在项目中导入启动器就可以直接使用了，非常方便，这是什么原理呢，接下来我们从几个注解来剖析一下SpringBoot的原理</p>
+<h2 id="2-1-Conditional说明"><a href="#2-1-Conditional说明" class="headerlink" title="2.1 @Conditional说明"></a>2.1 @Conditional说明</h2><p>看他的中文意思：有条件的</p>
+<p>Condition 是在Spring 4.0 增加的条件判断功能，通过这个可以功能可以实现选择性的创建 Bean 操作。</p>
+<p>SpringBoot是如何知道要创建哪个Bean的？比如SpringBoot是如何知道要创建RabbitTemplate的？</p>
+<p>接下来，创建一个项目具体演示@Conditional注解的用法：</p>
+<h3 id="2-1-1-环境准备"><a href="#2-1-1-环境准备" class="headerlink" title="2.1.1 环境准备"></a>2.1.1 环境准备</h3><p>1、创建项目 springboot_condition</p>
+<p><img data-src="/assets/conditional0.png" alt="conditional0">    </p>
+<p>2、导入依赖</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.3.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--springboot项目基本的启动器--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>3、在com.sun包下创建引导类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConditionApplication</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        </span><br><span class="line">        ConfigurableApplicationContext run </span><br><span class="line">                = SpringApplication.run(ConditionApplication<span class="class">.<span class="keyword">class</span>, <span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>4、在com.sun.pojo中添加一个User类,空的就行</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>5、在com.sun.config下创建一个配置类，配置类中使用@Bean创建Bean对象</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpringConfig</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">user</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> User();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>6、在引导类中获取User对象</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConditionApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        ConfigurableApplicationContext run</span><br><span class="line">                = SpringApplication.run(ConditionApplication<span class="class">.<span class="keyword">class</span>, <span class="title">args</span>)</span>;</span><br><span class="line">        User user = run.getBean(User<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        System.out.println(user);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看控制台日志的输出，证明User对象已经获取了</p>
+<p><img data-src="/assets/conditional1.png" alt="conditional1">    </p>
+<p>现在要做一些限制</p>
+<h3 id="2-1-2-有选择性的创建对象"><a href="#2-1-2-有选择性的创建对象" class="headerlink" title="2.1.2 有选择性的创建对象"></a>2.1.2 有选择性的创建对象</h3><p>需求1：导入Jedis坐标后，创建User这个Bean，没导入，则不创建。</p>
+<h4 id="2-1-2-1-Conditional使用说明"><a href="#2-1-2-1-Conditional使用说明" class="headerlink" title="2.1.2.1 @Conditional使用说明"></a>2.1.2.1 @Conditional使用说明</h4><p><img data-src="/assets/conditional2.png" alt="conditional2">    </p>
+<p>参考上图理解下面的步骤</p>
+<p>① 在创建bean的位置添加@Conditional注解</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@Conditional</span>() <span class="comment">//此时这里会报错的</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">user</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> User();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>② @Conditional注解的源码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.context.annotation;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.Documented;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.ElementType;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.Retention;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.RetentionPolicy;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.Target;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Target</span>(&#123;ElementType.TYPE, ElementType.METHOD&#125;)</span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Documented</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Conditional &#123;</span><br><span class="line">    Class&lt;? extends Condition&gt;[] value();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>③ 自定义一个实现了Condition接口的子类,需要实现一个matches方法，里面默认是直接返回false</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyCondition</span> <span class="keyword">implements</span> <span class="title">Condition</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">matches</span><span class="params">(ConditionContext context, AnnotatedTypeMetadata metadata)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>④ 在创建User的bean时指定MyCondition的字节码</p>
+<p><img data-src="/assets/conditional3.png" alt="conditional3">    </p>
+<p>再运行引导类时发现User对象获取不到了</p>
+<p><img data-src="/assets/conditional4.png" alt="conditional4">    </p>
+<p>原因是因为自定义的MyCondition中的matches方法返回false导致的，那么如果返回true就能获取到了，那在回到我们的需求：导入Jedis坐标后，创建User这个Bean，没导入，则不创建，那么我们怎么知道Jedis的坐标有没有导入呢？其实很简单，看能不能加载到 Jedis 这个类就可判断了</p>
+<h4 id="2-1-2-2-修改Condition的条件"><a href="#2-1-2-2-修改Condition的条件" class="headerlink" title="2.1.2.2 修改Condition的条件"></a>2.1.2.2 修改Condition的条件</h4><p>所以再修改MyCondition中的matches方法如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyCondition</span> <span class="keyword">implements</span> <span class="title">Condition</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">matches</span><span class="params">(ConditionContext context, AnnotatedTypeMetadata metadata)</span> </span>&#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//判断jedis相关jar包是否导入</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Class.forName(<span class="string">"redis.clients.jedis.Jedis"</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">            <span class="comment">//e.printStackTrace();</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试发现，导入Jedis的坐标就能获取User对象，不导入Jedis的坐标就不能获取User对象了</p>
+<p>Jedis坐标如下，自己测试一下吧~</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>redis.clients<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jedis<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-3-Conditional的高级玩法"><a href="#2-1-3-Conditional的高级玩法" class="headerlink" title="2.1.3 @Conditional的高级玩法"></a>2.1.3 @Conditional的高级玩法</h3><p>需求：将类的判断定义为动态的。判断哪个字节码文件存在可以动态指定。</p>
+<p>自定义条件的步骤</p>
+<p>第一步：自定义一个注解@MyConditional，</p>
+<p>​               需要继承@Conditional注解，再自定义的注解中添加一个name属性</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Target</span>(&#123;ElementType.TYPE, ElementType.METHOD&#125;)</span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Documented</span></span><br><span class="line"><span class="meta">@Conditional</span>(MyCondition<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> @<span class="title">interface</span> <span class="title">MyConditional</span> </span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">name</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第二步：修改刚才的MyCondition类：重写 matches 方法，在 matches 方法中进行逻辑判断，返回boolean值 。 matches 方法两个参数：</p>
+<p>context：上下文对象，可以获取属性值，获取类加载器，获取BeanFactory等。</p>
+<p>metadata：元数据对象，用于获取注解属性。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyCondition</span> <span class="keyword">implements</span> <span class="title">Condition</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">matches</span><span class="params">(ConditionContext context, AnnotatedTypeMetadata metadata)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//判断jedis相关jar包是否导入</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//Class.forName("redis.clients.jedis.Jedis");</span></span><br><span class="line">            <span class="comment">//获取注解中的属性</span></span><br><span class="line">            Map&lt;String, Object&gt; map</span><br><span class="line">                    = metadata.getAnnotationAttributes(MyConditional<span class="class">.<span class="keyword">class</span>.<span class="title">getName</span>())</span>;</span><br><span class="line">            <span class="comment">//获取name属性</span></span><br><span class="line">            String name = (String) map.get(<span class="string">"name"</span>);</span><br><span class="line">            Class.forName(name);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">            <span class="comment">//e.printStackTrace();</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第三步：在初始化Bean时，使用 @MyClassConditional(name=”类的全限定名”)注解</p>
+<p>在UserConfig中修改user()方法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpringConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="comment">//@Conditional(MyCondition.class) //判断条件是否满足的一个注解</span></span><br><span class="line">    <span class="meta">@MyConditional</span>(name = <span class="string">"redis.clients.jedis.Jedis"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">user</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> User();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-1-4-SpringBoot常用条件注解"><a href="#2-1-4-SpringBoot常用条件注解" class="headerlink" title="2.1.4 SpringBoot常用条件注解"></a>2.1.4 SpringBoot常用条件注解</h3><p><code>@ConditionalOnClass</code>：判断环境中是否有对应字节码文件才初始化Bean，和我们自定义的@MyConditional原理一模一样</p>
+<p><code>@ConditionalOnMissingClass</code>：判断环境中没有对应Bean才初始化Bean，和ConditionalOnClass相反</p>
+<p><code>@ConditionalOnProperty</code>：判断配置文件中是否有对应属性和值才初始化Bean</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">mm:</span> <span class="string">jj</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpringConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="comment">//@Conditional(MyCondition.class) //判断条件是否满足的一个注解</span></span><br><span class="line">    <span class="comment">//@MyConditional(name = "redis.clients.jedis.Jedis")</span></span><br><span class="line">    <span class="comment">//@ConditionalOnClass(name = "redis.clients.jedis.Jedis")</span></span><br><span class="line">    <span class="comment">//@ConditionalOnMissingClass(value = "redis.clients.jedis.Jedis")</span></span><br><span class="line">    <span class="meta">@ConditionalOnProperty</span>(name = <span class="string">"mm"</span>, havingValue = <span class="string">"jj"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">user</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> User();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="2-2-Import说明"><a href="#2-2-Import说明" class="headerlink" title="2.2 @Import说明"></a>2.2 @Import说明</h2><p>SpringBoot 工程是否可以直接获取第三方（非spring的）jar包中定义的Bean？</p>
+<p>SpringBoot中提供了很多Enable开头的注解，这些注解都是用于动态启用某些功能的。而其底层原理是使用@Import注解导入一些配置类，实现Bean的动态加载。</p>
+<p>比如@EnableAutoConfiguration注解</p>
+<p><img data-src="/assets/import%E6%B3%A8%E8%A7%A31.png" alt="import注解1">    </p>
+<h3 id="2-2-1-环境准备"><a href="#2-2-1-环境准备" class="headerlink" title="2.2.1 环境准备"></a>2.2.1 环境准备</h3><p><strong>说明</strong></p>
+<p>创建两个项目<br>第一个项目提供一个User的bean和配置类UserConfig 都放到com.sun包下</p>
+<p>第二个项目com.sun包下创建引导类，获取User对象</p>
+<p>注意两个项目的包故意做成不一样的！</p>
+<p><strong>步骤</strong></p>
+<p>第一步：创建项目springboot_other（可以不用创建直接用自定义条件注解工程）</p>
+<p><img data-src="/assets/import%E6%B3%A8%E8%A7%A32.png" alt="import注解2">    </p>
+<p>添加springboot最基础的启动器</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.3.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在cn.sun.pojo包下创建实体类User</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.sun.pojo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在cn.itcast.config包下创建配置类UserConfig</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span> <span class="comment">//声明配置类</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span> <span class="comment">//实例化对象</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">user</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> User();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第二步：创建项目springboot_import</p>
+<p><img data-src="/assets/import%E6%B3%A8%E8%A7%A33.png" alt="import注解3">    </p>
+<p>添加springboot基本的启动器的依赖，并且添加springboot-other的依赖</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.sun<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>springboot_other<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在com.meng包下创建引导类获取<strong>springboot_other</strong>项目中的User对象</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.meng;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.pojo.User;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.SpringApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.ConfigurableApplicationContext;</span><br><span class="line"></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//run方法后初始化容器</span></span><br><span class="line">        ConfigurableApplicationContext app = SpringApplication.run(MyApplication<span class="class">.<span class="keyword">class</span>, <span class="title">args</span>)</span>;</span><br><span class="line">        <span class="comment">//从容器中获取user对象</span></span><br><span class="line">        User user = app.getBean(User<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        System.out.println(user); <span class="comment">//验证是否能获取到user对象</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的代码肯定是获取不到的，因为@SpringBootApplication上的@ComponentScan只扫描了com.meng,而第三方的对象在com.sun包下，所以是无法创建User对象的</p>
+<p>我们可以在引导类上使用@ComponentScan（“cn.sun”）即可</p>
+<p><img data-src="/assets/import%E6%B3%A8%E8%A7%A34.png" alt="import注解4">    </p>
+<p>但是在最项目时其实会用到很多非spring提供的包，都是用@ComponentScan扫描那么在引导类上会出现很多的，有没有其他的方式呢？当然有，那就是@Import</p>
+<h3 id="2-2-2-Import的使用"><a href="#2-2-2-Import的使用" class="headerlink" title="2.2.2 @Import的使用"></a>2.2.2 @Import的使用</h3><p>@Import的4种用法都可以把第三方包的类创建对象</p>
+<p>第一种用法：引导类上 @Import(User.class)  ,获取的时候需要使用类型方式</p>
+<p><img data-src="/assets/import%E6%B3%A8%E8%A7%A35.png" alt="import注解5">    </p>
+<p>第二种用法： @Import(UserConfig.class)</p>
+<p><img data-src="/assets/import%E6%B3%A8%E8%A7%A36.png" alt="import注解6">    </p>
+<h2 id="2-3-小结"><a href="#2-3-小结" class="headerlink" title="2.3 小结"></a>2.3 小结</h2><p>@EnableAutoConfiguration 注解内部使用 @Import(AutoConfigurationImportSelector.<strong>class</strong>)来加载配置类。</p>
+<p>配置文件位置：META-INF/spring.factories，该配置文件中定义了大量的配置类，当 SpringBoot 应用启动时，会自动加载这些配置类，初始化Bean</p>
+<p>并不是所有的Bean都会被初始化，在配置类中使用Condition来加载满足条件的Bean</p>
+<h1 id="3-学习自定义启动器"><a href="#3-学习自定义启动器" class="headerlink" title="3. 学习自定义启动器"></a>3. 学习自定义启动器</h1><h2 id="3-1步骤"><a href="#3-1步骤" class="headerlink" title="3.1步骤"></a>3.1步骤</h2><figure class="highlight markdown"><table><tr><td class="code"><pre><span class="line">1、创建starter项目</span><br><span class="line">2、创建实际的业务功能项目hello-spring-boot-autoconfigure</span><br><span class="line">3、添加springboot依赖</span><br><span class="line">4、定义HelloTemplate，实现一个方法</span><br><span class="line">5、定义配置类，在配置类中将HelloTemplate定义为一个Bean</span><br><span class="line">6、添加META-INF/spring.factories，在这个配置文件中添加自动配置的key和value</span><br><span class="line">7、在其他项目中添加启动项目</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2创建starter项目"><a href="#3-2创建starter项目" class="headerlink" title="3.2创建starter项目"></a>3.2创建starter项目</h2><h3 id="1-开发一个hello-spring-boot-starter项目，这个项目是空项目，主要做依赖管理"><a href="#1-开发一个hello-spring-boot-starter项目，这个项目是空项目，主要做依赖管理" class="headerlink" title="1.开发一个hello-spring-boot-starter项目，这个项目是空项目，主要做依赖管理"></a>1.开发一个hello-spring-boot-starter项目，这个项目是空项目，主要做依赖管理</h3><p><img data-src="/assets/%E8%87%AA%E5%AE%9A%E4%B9%89%E5%90%AF%E5%8A%A8%E5%99%A81.png" alt="自定义启动器1">    </p>
+<h3 id="2-创建hello-spring-boot-autoconfigure项目"><a href="#2-创建hello-spring-boot-autoconfigure项目" class="headerlink" title="2.创建hello-spring-boot-autoconfigure项目"></a>2.创建hello-spring-boot-autoconfigure项目</h3><p>因为springboot自带的autoconfigure中没有我们开发的HelloTemplate的自动装配，我们需要开发一个hello-spring-boot-autoconfigure项目</p>
+<p>​    <img data-src="/assets/%E8%87%AA%E5%AE%9A%E4%B9%89%E5%90%AF%E5%8A%A8%E5%99%A82.png" alt="自定义启动器2"></p>
+<p>添加基本的springboot依赖(因为需要使用@Bean等注解)</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.3.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-在autoconfigure项目中开发"><a href="#3-在autoconfigure项目中开发" class="headerlink" title="3.在autoconfigure项目中开发"></a>3.在autoconfigure项目中开发</h3><p>3.1 定义HelloTemplate工具类，实现一个简单功能</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.sun.auto.utils;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 自定义工具类</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloTemplate</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">sayHello</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"hello,这是springboot的自定义启动器"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>3.2 定义HelloAutoConfiguration配置类，将HelloTemplate工具类交给IOC容器</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.sun.auto.config;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.auto.utils.HelloTemplate;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloAutoConfiguration</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> HelloTemplate <span class="title">helloTemplate</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> HelloTemplate();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>3.3 在autoconfigure项目的resources目录中创建META-INF目录</p>
+<p>在META-INF目录定义spring.factories配置文件，在改配置文件中定义扫描的配置类（HelloAutoConfiguration),这样spring就能扫描到HelloAutoConfiguration配置类了</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 第一行固定写法，第二行是我们定义的配置类全限定名，这样spring就能扫描到配置类了</span></span><br><span class="line"><span class="comment"># Auto Configure</span></span><br><span class="line"><span class="string">org.springframework.boot.autoconfigure.EnableAutoConfiguration=\</span></span><br><span class="line"><span class="string">com.sun.auto.config.HelloAutoConfiguration</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-在hello-spring-boot-starter中添加hello-spring-boot-autoconfigure依赖"><a href="#4-在hello-spring-boot-starter中添加hello-spring-boot-autoconfigure依赖" class="headerlink" title="4.在hello-spring-boot-starter中添加hello-spring-boot-autoconfigure依赖"></a>4.在hello-spring-boot-starter中添加hello-spring-boot-autoconfigure依赖</h3><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.sun<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>hello-spring-boot-autoconfigure<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-在任何一个springboot项目中使用HelloTemplate工具类"><a href="#5-在任何一个springboot项目中使用HelloTemplate工具类" class="headerlink" title="5.在任何一个springboot项目中使用HelloTemplate工具类"></a>5.在任何一个springboot项目中使用HelloTemplate工具类</h3><p>仅需要添加我们开发的hello-spring-boot-starter依赖，就可以使用HelloTemplate工具类</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--自定义启动器hello-spring-boot-starter--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.sun<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>hello-spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>可以写编写单元测试一下功能</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">SpringBootTest</span></span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">HelloStartTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> HelloTemplate helloTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test01</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">        String hello = helloTemplate.sayHello();</span><br><span class="line">        System.out.println(hello);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="4-SpringBoot监控（了解）"><a href="#4-SpringBoot监控（了解）" class="headerlink" title="4. SpringBoot监控（了解）"></a>4. SpringBoot监控（了解）</h1><h2 id="4-1-Actuator监控"><a href="#4-1-Actuator监控" class="headerlink" title="4.1 Actuator监控"></a>4.1 Actuator监控</h2><p>SpringBoot自带监控功能Actuator，可以帮助实现对程序内部运行情况监控，比如监控状况、Bean加载情况、配置属性、日志信息等。</p>
+<p>在任意的springboot项目中测试</p>
+<p>①导入依赖坐标</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--SpringBoot自带的监控器actuator--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-actuator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>②访问<a href="http://localhost/actuator" target="_blank" rel="noopener">http://localhost/actuator</a>   springboot项目设置的端口号是80，80端口号可以省略的</p>
+<p><img data-src="/assets/actuator%E7%9B%91%E6%8E%A7%E5%99%A81.png" alt="actuator监控器1">    </p>
+<p>如果想看更详细的health信息信息，在配置文件中添加以下代码</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">management:</span></span><br><span class="line">  <span class="attr">endpoint:</span></span><br><span class="line">    <span class="attr">health:</span></span><br><span class="line">      <span class="attr">show-details:</span> <span class="string">always</span></span><br></pre></td></tr></table></figure>
+
+<p>重启项目后再访问</p>
+<p><img data-src="/assets/actuator%E7%9B%91%E6%8E%A7%E5%99%A82.png" alt="actuator监控器2">    </p>
+<p>④ 如果想看更多的信息，在配置文件中添加以下代码</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">management:</span></span><br><span class="line">  <span class="attr">endpoint:</span></span><br><span class="line">    <span class="attr">health:</span></span><br><span class="line">      <span class="attr">show-details:</span> <span class="string">always</span></span><br><span class="line">  <span class="attr">endpoints:</span></span><br><span class="line">    <span class="attr">web:</span></span><br><span class="line">      <span class="attr">exposure:</span></span><br><span class="line">        <span class="attr">include:</span> <span class="string">"*"</span></span><br></pre></td></tr></table></figure>
+
+<p>重启在访问 <a href="http://localhost/actuator" target="_blank" rel="noopener">http://localhost/actuator</a> ，发现多了很多东西</p>
+<p>重点关注3个</p>
+<p> <a href="http://localhost/actuator/beans" target="_blank" rel="noopener">http://localhost/actuator/beans</a> </p>
+<p> <a href="http://localhost/actuator/env" target="_blank" rel="noopener">http://localhost/actuator/env</a> </p>
+<p> <a href="http://localhost/actuator/mappings" target="_blank" rel="noopener">http://localhost/actuator/mappings</a> </p>
+<p>具体详细的解释：</p>
+<table>
+<thead>
+<tr>
+<th><strong>路径</strong></th>
+<th><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>/beans</td>
+<td>描述应用程序上下文里全部的Bean，以及它们的关系</td>
+</tr>
+<tr>
+<td>/env</td>
+<td>获取全部环境属性</td>
+</tr>
+<tr>
+<td>/env/{name}</td>
+<td>根据名称获取特定的环境属性值</td>
+</tr>
+<tr>
+<td>/health</td>
+<td>报告应用程序的健康指标，这些值由HealthIndicator的实现类提供</td>
+</tr>
+<tr>
+<td>/info</td>
+<td>获取应用程序的定制信息，这些信息由info打头的属性提供</td>
+</tr>
+<tr>
+<td>/mappings</td>
+<td>描述全部的URI路径，以及它们和控制器(包含Actuator端点)的映射关系</td>
+</tr>
+<tr>
+<td>/metrics</td>
+<td>报告各种应用程序度量信息，比如内存用量和HTTP请求计数</td>
+</tr>
+<tr>
+<td>/metrics/{name}</td>
+<td>报告指定名称的应用程序度量值</td>
+</tr>
+<tr>
+<td>/trace</td>
+<td>提供基本的HTTP请求跟踪信息(时间戳、HTTP头等)</td>
+</tr>
+</tbody></table>
+<h2 id="4-2-Spring-Boot-Admin"><a href="#4-2-Spring-Boot-Admin" class="headerlink" title="4.2 Spring Boot Admin"></a>4.2 Spring Boot Admin</h2><p>actuator的监控内容够详细，但是阅读性比较差，所以可以使用Spring Boot Admin提供一个可视化的界面查阅信息，Spring Boot Admin是一个开源社区项目，用于管理和监控SpringBoot应用程序。 </p>
+<p>Spring Boot Admin 有两个角色，客户端(Client)和服务端(Server)。</p>
+<p>应用程序作为Spring Boot Admin Client向为Spring Boot Admin Server注册</p>
+<p>Spring Boot Admin Server 的界面将Boot Admin ClientActuatorEndpoint</p>
+<p><strong>开发步骤如下</strong>：</p>
+<p>admin-server：</p>
+<p>①创建 admin-server 模块</p>
+<p>②导入依赖坐标 admin-starter-server</p>
+<p>③在引导类上启用监控功能@EnableAdminServer</p>
+<p>admin-client： 自己创建的项目就是所谓的client端</p>
+<p>①创建 admin-client 模块</p>
+<p>②导入依赖坐标 admin-starter-client</p>
+<p>③配置相关信息：server地址等</p>
+<p>④启动server和client服务，访问server</p>
+<p><strong>功能演示：</strong></p>
+<p>第一步：创建springboot-admin-server端</p>
+<p>1、创建项目</p>
+<p><img data-src="/assets/springbootadmin1.png" alt="springbootadmin1">    </p>
+<p>2、导入依赖</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.3.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.3.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>de.codecentric<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-admin-starter-server<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>3、创建引导类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableAdminServer</span><span class="comment">//注意这里需要开启注解</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpringBootAdminServerApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(SpringBootAdminServerApplication<span class="class">.<span class="keyword">class</span>, <span class="title">args</span>)</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第二步：把springboot-demo项目作为client端</p>
+<p>1、在springboot-demo项目中添加依赖</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>de.codecentric<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-admin-starter-client<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>2、发布到server端,在application.yml中添加</p>
+<p>spring.boot.admin.client.url=<a href="http://localhost:8080" target="_blank" rel="noopener">http://localhost:8080</a></p>
+<p>​    <img data-src="/assets/springbootadmin3.png" alt="actuator监控器3"></p>
+<p>第三步：两个项目启动 （先启动server）</p>
+<p>访问项目 <a href="http://localhost:8080/#/applications" target="_blank" rel="noopener">http://localhost:8080/#/applications</a> 查阅信息即可</p>
+<p><img data-src="/assets/springbootadmin2.png" alt="springbootadmin2">    </p>
+<h1 id="5-SpringBoot项目的部署"><a href="#5-SpringBoot项目的部署" class="headerlink" title="5. SpringBoot项目的部署"></a>5. SpringBoot项目的部署</h1><p>SpringBoot 项目开发完毕后，支持两种方式部署到服务器：</p>
+<h2 id="5-1-jar包-官方推荐"><a href="#5-1-jar包-官方推荐" class="headerlink" title="5.1 jar包(官方推荐)"></a>5.1 jar包(官方推荐)</h2><p>第一步：在项目中添加一个插件</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--         最后导出jar或war的名称--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">finalName</span>&gt;</span>springboot-demo<span class="tag">&lt;/<span class="name">finalName</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>第二步：执行package命令打出一个jar</p>
+<p><img data-src="/assets/springboot%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B21.png" alt="springboot项目部署1">    </p>
+<p>第三步：直接使用java -jar 运行jar项目</p>
+<p>把打出的jar放入到一个没有中文没有空格的位置执行<code>java -jar jar包名称</code></p>
+<p><img data-src="/assets/springboot%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B22.png" alt="springboot项目部署2">    </p>
+<p>成功！</p>
+<h2 id="5-2-war包"><a href="#5-2-war包" class="headerlink" title="5.2 war包"></a>5.2 war包</h2><p>第一步：项目的打包方式改为war</p>
+<p><img data-src="/assets/springboot%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B23.png" alt="springboot项目部署3">    </p>
+<p>第二步：在引导类上修改代码</p>
+<p>1、继承一个父类 SpringBootServletInitializer   2、添加一个方法 configure方法</p>
+<p><img data-src="/assets/springboot%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B24.png" alt="springboot项目部署4">    </p>
+<p>第三步：执行package命令打出一个war</p>
+<p><img data-src="/assets/springboot%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B21.png" alt="springboot项目部署1">    </p>
+<p>第四步：放入到一个tomcat8的webapps目录中运行即可</p>
+<p><img data-src="/assets/springboot%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B25.png" alt="springboot项目部署5">    </p>
+]]></content>
+      <categories>
+        <category>框架</category>
+        <category>SpringBoot</category>
+      </categories>
+      <tags>
+        <tag>整合第三方框架</tag>
+        <tag>原理详细分析</tag>
+        <tag>自定义启动器</tag>
+        <tag>SpringBoot监控</tag>
+        <tag>SpringBoot项目部署</tag>
+      </tags>
+  </entry>
 </search>
