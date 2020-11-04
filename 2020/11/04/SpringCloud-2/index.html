@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/wind32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/wind16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-center-atom.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"sunmoon.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.3","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="1.Feign在前面的学习中，我们使用了Ribbon的负载均衡功能，大大简化了远程调用时的代码： 1String userStr &#x3D; restTemplate.getForObject(&quot;http:&#x2F;&#x2F;user-service&#x2F;findById&#x2F;&quot; + id, String.class);  如果就学到这里，你可能以后需要编写类似的大量重复代码，格式基本相同，无非参数不一样。有没有更优雅的方式，来">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SpringCloud-2">
+<meta property="og:url" content="http://sunmoon.com/2020/11/04/SpringCloud-2/index.html">
+<meta property="og:site_name" content="清风的博客">
+<meta property="og:description" content="1.Feign在前面的学习中，我们使用了Ribbon的负载均衡功能，大大简化了远程调用时的代码： 1String userStr &#x3D; restTemplate.getForObject(&quot;http:&#x2F;&#x2F;user-service&#x2F;findById&#x2F;&quot; + id, String.class);  如果就学到这里，你可能以后需要编写类似的大量重复代码，格式基本相同，无非参数不一样。有没有更优雅的方式，来">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://sunmoon.com/assets/1525662976679.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604453036544.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1525672070679.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1525672466192.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1533942286259.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1525674373507.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1525674544569.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1525675037152.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1525675168152.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1525675648881.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604456792781.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604457755133.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604460532648.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604458786643.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604459313314.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1525677891119.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1533945001048.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604474654324.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604474580424.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604474595462.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604476475148.png">
+<meta property="og:image" content="http://sunmoon.com/assets/8_21.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604476876771.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604476981117.png">
+<meta property="og:image" content="http://sunmoon.com/assets/8_26.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604477058559.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604478662261.png">
+<meta property="og:image" content="http://sunmoon.com/assets/8_24.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604477163724.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1584512626579.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604479832065.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604478997721.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604478662261.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604478701630.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604480227081.png">
+<meta property="og:image" content="c:/Users/Sunmoon/Desktop/%E5%B0%B1%E4%B8%9A%E7%8F%AD/%E7%AC%94%E8%AE%B0/Spring/SpringCloud/assets/1604480260363.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604480273543.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604480329763.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1584513241138.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1584526763709.png">
+<meta property="article:published_time" content="2020-11-04T13:50:53.000Z">
+<meta property="article:modified_time" content="2020-11-04T14:05:31.382Z">
+<meta property="article:author" content="Sunmoon">
+<meta property="article:tag" content="Feign">
+<meta property="article:tag" content="Zuul网关">
+<meta property="article:tag" content="集中配置组件SpringCloudConfig">
+<meta property="article:tag" content="消息总线组件SpringCloudBus">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://sunmoon.com/assets/1525662976679.png">
+
+<link rel="canonical" href="http://sunmoon.com/2020/11/04/SpringCloud-2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SpringCloud-2 | 清风的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before, .use-motion .logo-line-after {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="清风的博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line-before"></i>
+      <h1 class="site-title">清风的博客</h1>
+      <i class="logo-line-after"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">山水有相逢，山不动，水不停</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-Feign"><span class="nav-number">1.</span> <span class="nav-text">1.Feign</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-简介"><span class="nav-number">1.1.</span> <span class="nav-text">1.1.简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-快速入门"><span class="nav-number">1.2.</span> <span class="nav-text">1.2.快速入门</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-1-导入依赖"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.2.1.导入依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-2-Feign的客户端"><span class="nav-number">1.2.2.</span> <span class="nav-text">1.2.2.Feign的客户端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-3-开启Feign功能"><span class="nav-number">1.2.3.</span> <span class="nav-text">1.2.3.开启Feign功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-4-启动测试："><span class="nav-number">1.2.4.</span> <span class="nav-text">1.2.4.启动测试：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-负载均衡"><span class="nav-number">1.3.</span> <span class="nav-text">1.3.负载均衡</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-Hystrix支持-了解"><span class="nav-number">1.4.</span> <span class="nav-text">1.4.Hystrix支持(了解)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-5-请求压缩-了解"><span class="nav-number">1.5.</span> <span class="nav-text">1.5.请求压缩(了解)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-6-日志级别-了解"><span class="nav-number">1.6.</span> <span class="nav-text">1.6.日志级别(了解)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-Zuul网关"><span class="nav-number">2.</span> <span class="nav-text">2.Zuul网关</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-简介"><span class="nav-number">2.1.</span> <span class="nav-text">2.1.简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-Zuul加入后的架构"><span class="nav-number">2.2.</span> <span class="nav-text">2.2.Zuul加入后的架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-快速入门"><span class="nav-number">2.3.</span> <span class="nav-text">2.3.快速入门</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-1-新建工程"><span class="nav-number">2.3.1.</span> <span class="nav-text">2.3.1.新建工程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-2-编写启动类"><span class="nav-number">2.3.2.</span> <span class="nav-text">2.3.2.编写启动类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-2-编写配置"><span class="nav-number">2.3.3.</span> <span class="nav-text">2.3.2.编写配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-4-编写路由规则"><span class="nav-number">2.3.4.</span> <span class="nav-text">2.3.4.编写路由规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-5-启动测试："><span class="nav-number">2.3.5.</span> <span class="nav-text">2.3.5.启动测试：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-面向服务的路由"><span class="nav-number">2.4.</span> <span class="nav-text">2.4.面向服务的路由</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-1-添加Eureka客户端依赖"><span class="nav-number">2.4.1.</span> <span class="nav-text">2.4.1.添加Eureka客户端依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-2-开启Eureka客户端发现功能"><span class="nav-number">2.4.2.</span> <span class="nav-text">2.4.2.开启Eureka客户端发现功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-3-添加Eureka配置，获取服务信息"><span class="nav-number">2.4.3.</span> <span class="nav-text">2.4.3.添加Eureka配置，获取服务信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-4-修改映射配置，通过服务名称获取"><span class="nav-number">2.4.4.</span> <span class="nav-text">2.4.4.修改映射配置，通过服务名称获取</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-5-启动测试"><span class="nav-number">2.4.5.</span> <span class="nav-text">2.4.5.启动测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-5-简化的路由配置"><span class="nav-number">2.5.</span> <span class="nav-text">2.5.简化的路由配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-6-默认的路由规则"><span class="nav-number">2.6.</span> <span class="nav-text">2.6.默认的路由规则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-7-路由前缀"><span class="nav-number">2.7.</span> <span class="nav-text">2.7.路由前缀</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-8-过滤器"><span class="nav-number">2.8.</span> <span class="nav-text">2.8.过滤器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-1-ZuulFilter"><span class="nav-number">2.8.1.</span> <span class="nav-text">2.8.1.ZuulFilter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-2-过滤器执行生命周期："><span class="nav-number">2.8.2.</span> <span class="nav-text">2.8.2.过滤器执行生命周期：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-3-使用场景"><span class="nav-number">2.8.3.</span> <span class="nav-text">2.8.3.使用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-9-自定义过滤器"><span class="nav-number">2.9.</span> <span class="nav-text">2.9.自定义过滤器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-9-1-定义过滤器类"><span class="nav-number">2.9.1.</span> <span class="nav-text">2.9.1.定义过滤器类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-9-2-测试"><span class="nav-number">2.9.2.</span> <span class="nav-text">2.9.2.测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-10-负载均衡和熔断"><span class="nav-number">2.10.</span> <span class="nav-text">2.10.负载均衡和熔断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-11-Zuul的高可用"><span class="nav-number">2.11.</span> <span class="nav-text">2.11.Zuul的高可用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-了解知识："><span class="nav-number">3.</span> <span class="nav-text">3.了解知识：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-bootstrap-yml-和-application-yml"><span class="nav-number">3.1.</span> <span class="nav-text">3.1.bootstrap.yml 和 application.yml</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-Spring-Boot多环境配置切换"><span class="nav-number">3.2.</span> <span class="nav-text">3.2.Spring Boot多环境配置切换</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-集中配置组件SpringCloudConfig-4-1-Spring-Cloud-Config简介"><span class="nav-number">4.</span> <span class="nav-text">4. 集中配置组件SpringCloudConfig 4.1 Spring Cloud Config简介</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-配置服务端"><span class="nav-number">4.1.</span> <span class="nav-text">4.2 配置服务端</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-1-将配置文件提交到码云"><span class="nav-number">4.1.1.</span> <span class="nav-text">4.2.1 将配置文件提交到码云</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-2-配置中心微服务"><span class="nav-number">4.1.2.</span> <span class="nav-text">4.2.2 配置中心微服务</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-3-配置客户端"><span class="nav-number">4.2.</span> <span class="nav-text">4.3 配置客户端</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-消息总线组件SpringCloudBus"><span class="nav-number">5.</span> <span class="nav-text">5 消息总线组件SpringCloudBus</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-SpringCloudBus简介"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 SpringCloudBus简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-2-代码实现"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 代码实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-1-配置服务端-config-server"><span class="nav-number">5.2.1.</span> <span class="nav-text">5.2.1 配置服务端  config-server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-2-配置客户端-user-service"><span class="nav-number">5.2.2.</span> <span class="nav-text">5.2.2 配置客户端  user-service</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sunmoon"
+      src="/images/sunmoon.jpg">
+  <p class="site-author-name" itemprop="name">Sunmoon</p>
+  <div class="site-description" itemprop="description">阴晴雨雪，月圆月缺</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">62</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">190</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Sunmoon76" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Sunmoon76" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/gongleman9016/" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;gongleman9016&#x2F;" rel="noopener" target="_blank"><i class="fa fa-cube fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Sunmoon76" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://sunmoon.com/2020/11/04/SpringCloud-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/sunmoon.jpg">
+      <meta itemprop="name" content="Sunmoon">
+      <meta itemprop="description" content="阴晴雨雪，月圆月缺">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="清风的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SpringCloud-2
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-11-04 21:50:53 / 修改时间：22:05:31" itemprop="dateCreated datePublished" datetime="2020-11-04T21:50:53+08:00">2020-11-04</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%A1%86%E6%9E%B6/" itemprop="url" rel="index"><span itemprop="name">框架</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%A1%86%E6%9E%B6/SpringCloud/" itemprop="url" rel="index"><span itemprop="name">SpringCloud</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>18k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>16 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-Feign"><a href="#1-Feign" class="headerlink" title="1.Feign"></a>1.Feign</h1><p>在前面的学习中，我们使用了Ribbon的负载均衡功能，大大简化了远程调用时的代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String userStr = restTemplate.getForObject(<span class="string">"http://user-service/findById/"</span> + id, String<span class="class">.<span class="keyword">class</span>)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>如果就学到这里，你可能以后需要编写类似的大量重复代码，格式基本相同，无非参数不一样。有没有更优雅的方式，来对这些代码再次优化呢？</p>
+<p>这就是我们接下来要学的Feign的功能了。</p>
+<h2 id="1-1-简介"><a href="#1-1-简介" class="headerlink" title="1.1.简介"></a>1.1.简介</h2><p>有道词典的英文解释：</p>
+<p><img data-src="/assets/1525662976679.png" alt="1525662976679"> </p>
+<p>为什么叫伪装？</p>
+<p>Feign可以把Rest的请求进行隐藏，伪装成类似SpringMVC的Controller一样。你不用再自己拼接url，拼接参数等等操作，一切都交给Feign去做。</p>
+<p>项目主页：<a href="https://github.com/OpenFeign/feign" target="_blank" rel="noopener">https://github.com/OpenFeign/feign</a></p>
+<a id="more"></a>
+
+<h2 id="1-2-快速入门"><a href="#1-2-快速入门" class="headerlink" title="1.2.快速入门"></a>1.2.快速入门</h2><h3 id="1-2-1-导入依赖"><a href="#1-2-1-导入依赖" class="headerlink" title="1.2.1.导入依赖"></a>1.2.1.导入依赖</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--导入feign--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-openfeign<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-2-Feign的客户端"><a href="#1-2-2-Feign的客户端" class="headerlink" title="1.2.2.Feign的客户端"></a>1.2.2.Feign的客户端</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> cn.itcast.client;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> cn.itcast.pojo.User;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.openfeign.FeignClient;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.GetMapping;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.PathVariable;</span><br><span class="line"><span class="meta">@FeignClient</span>(<span class="string">"user-service"</span>)<span class="comment">// eureka注册中心服务名称</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserClient</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/findById/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">findById</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Integer id)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>首先这是一个接口，Feign会通过动态代理，帮我们生成实现类。这点跟mybatis的mapper很像</li>
+<li><code>@FeignClient</code>，声明这是一个Feign客户端，同时通过<code>value</code>属性指定服务名称</li>
+<li>接口中的定义方法，完全采用SpringMVC的注解，Feign会根据注解帮我们生成URL，并访问获取结果</li>
+</ul>
+<p>改造原来的调用逻辑，使用UserClient访问：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"consumer"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConsumerController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserClient userClient;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/findById/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">findById</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Integer id)</span>&#123;</span><br><span class="line">       </span><br><span class="line">        User user = userClient.findById(id);</span><br><span class="line">        <span class="keyword">return</span> user;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-3-开启Feign功能"><a href="#1-2-3-开启Feign功能" class="headerlink" title="1.2.3.开启Feign功能"></a>1.2.3.开启Feign功能</h3><p>我们在启动类上，添加注解，开启Feign功能</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*@SpringBootApplication</span></span><br><span class="line"><span class="comment">@EnableDiscoveryClient</span></span><br><span class="line"><span class="comment">@EnableCircuitBreaker  //开启熔断器的使用*/</span></span><br><span class="line"><span class="meta">@SpringCloudApplication</span></span><br><span class="line"><span class="meta">@EnableFeignClients</span> <span class="comment">//开启feign远程调用服务</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConsumerApplication</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(ConsumerApplication<span class="class">.<span class="keyword">class</span>,<span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@LoadBalanced</span>  <span class="comment">// 表明采用负载均衡策略</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> RestTemplate <span class="title">restTemplate</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> RestTemplate();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>你会发现RestTemplate的注册被我删除了。Feign中已经自动集成了Ribbon负载均衡，因此我们不需要自己定义RestTemplate了</li>
+</ul>
+<h3 id="1-2-4-启动测试："><a href="#1-2-4-启动测试：" class="headerlink" title="1.2.4.启动测试："></a>1.2.4.启动测试：</h3><p>访问接口：</p>
+<p><img data-src="/assets/1604453036544.png" alt="1533907548664"></p>
+<p>正常获取到了结果。</p>
+<h2 id="1-3-负载均衡"><a href="#1-3-负载均衡" class="headerlink" title="1.3.负载均衡"></a>1.3.负载均衡</h2><p>Feign中本身已经集成了Ribbon依赖和自动配置：</p>
+<p><img data-src="/assets/1525672070679.png" alt="1525672070679"></p>
+<p>因此我们不需要额外引入依赖，也不需要再注册<code>RestTemplate</code>对象。</p>
+<p>Fegin内置的ribbon默认设置了请求超时时长，默认是1000ms，我们可以通过手动配置来修改这个超时时长：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">ribbon:</span></span><br><span class="line">  <span class="attr">ReadTimeout:</span> <span class="number">2000</span> <span class="comment"># 读取超时时长</span></span><br><span class="line">  <span class="attr">ConnectTimeout:</span> <span class="number">1000</span> <span class="comment"># 建立链接的超时时长</span></span><br></pre></td></tr></table></figure>
+
+<p>，因为ribbon内部有重试机制，一旦超时，会自动重新发起请求。如果不希望重试，可以添加配置：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">ribbon:</span></span><br><span class="line">  <span class="attr">ReadTimeout:</span> <span class="number">2000</span> <span class="comment"># 数据通信超时时长</span></span><br><span class="line">  <span class="attr">ConnectTimeout:</span> <span class="number">500</span> <span class="comment"># 连接超时时长  </span></span><br><span class="line">  <span class="attr">MaxAutoRetries:</span> <span class="number">0</span> <span class="comment"># 当前服务器的重试次数</span></span><br><span class="line">  <span class="attr">MaxAutoRetriesNextServer:</span> <span class="number">1</span> <span class="comment"># 重试多少次服务</span></span><br><span class="line">  <span class="attr">OkToRetryOnAllOperations:</span> <span class="literal">false</span> <span class="comment"># 是否对所有的请求方式都重试 如果是false代表只对get请求重试</span></span><br></pre></td></tr></table></figure>
+
+<p>另外，Hystix的超时时间，应该比重试的总时间要大，比如当前案例中，应该配 大于2500*2 = 5000</p>
+<h2 id="1-4-Hystrix支持-了解"><a href="#1-4-Hystrix支持-了解" class="headerlink" title="1.4.Hystrix支持(了解)"></a>1.4.Hystrix支持(了解)</h2><p>Feign默认也有对Hystrix的集成：</p>
+<p><img data-src="/assets/1525672466192.png" alt="1525672466192"></p>
+<p>只不过，默认情况下是关闭的。我们需要通过下面的参数来开启：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">hystrix:</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">true</span> <span class="comment"># 开启Feign的熔断功能</span></span><br></pre></td></tr></table></figure>
+
+<p>但是，Feign中的Fallback配置不像Hystrix中那样简单了。</p>
+<p>1）首先，我们要定义一个类，是在刚才编写的UserFeignClient，作为fallback的处理类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserClientFallback</span> <span class="keyword">implements</span> <span class="title">UserClient</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">queryById</span><span class="params">(Long id)</span> </span>&#123;</span><br><span class="line">        User user = <span class="keyword">new</span> User();</span><br><span class="line">        user.setId(id);</span><br><span class="line">        user.setName(<span class="string">"用户查询出现异常！"</span>);</span><br><span class="line">        <span class="keyword">return</span> user;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>2）然后在UserFeignClient中，指定刚才编写的实现类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient</span>(value = <span class="string">"user-service"</span>, fallback = UserClientFallback<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">interface</span> <span class="title">UserClient</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/user/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function">User <span class="title">queryById</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Long id)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>3）重启测试：</p>
+<p>我们关闭user-service服务，然后在页面访问：</p>
+<p> <img data-src="/assets/1533942286259.png" alt="1533942286259"></p>
+<h2 id="1-5-请求压缩-了解"><a href="#1-5-请求压缩-了解" class="headerlink" title="1.5.请求压缩(了解)"></a>1.5.请求压缩(了解)</h2><p>Spring Cloud Feign 支持对请求和响应进行GZIP压缩，以减少通信过程中的性能损耗。通过下面的参数即可开启请求与响应的压缩功能：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">compression:</span></span><br><span class="line">    <span class="attr">request:</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span> <span class="comment"># 开启请求压缩</span></span><br><span class="line">    <span class="attr">response:</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span> <span class="comment"># 开启响应压缩</span></span><br></pre></td></tr></table></figure>
+
+<p>同时，我们也可以对请求的数据类型，以及触发压缩的大小下限进行设置：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">compression:</span></span><br><span class="line">    <span class="attr">request:</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span> <span class="comment"># 开启请求压缩</span></span><br><span class="line">      <span class="attr">mime-types:</span> <span class="string">text/html,application/xml,application/json</span> <span class="comment"># 设置压缩的数据类型</span></span><br><span class="line">      <span class="attr">min-request-size:</span> <span class="number">2048</span> <span class="comment"># 设置触发压缩的大小下限</span></span><br></pre></td></tr></table></figure>
+
+<p>注：上面的数据类型、压缩大小下限均为默认值。</p>
+<h2 id="1-6-日志级别-了解"><a href="#1-6-日志级别-了解" class="headerlink" title="1.6.日志级别(了解)"></a>1.6.日志级别(了解)</h2><p>前面讲过，通过<code>logging.level.xx=debug</code>来设置日志级别。然而这个对Fegin客户端而言不会产生效果。因为<code>@FeignClient</code>注解修改的客户端在被代理时，都会创建一个新的Fegin.Logger实例。我们需要额外指定这个日志的级别才可以。</p>
+<p>1）设置cn.itcast包下的日志级别都为debug</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">logging:</span></span><br><span class="line">  <span class="attr">level:</span></span><br><span class="line">    <span class="attr">cn.itcast:</span> <span class="string">debug</span></span><br></pre></td></tr></table></figure>
+
+<p>2）编写配置类，定义日志级别</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FeignConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    Logger.<span class="function">Level <span class="title">feignLoggerLevel</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Logger.Level.FULL;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里指定的Level级别是FULL，Feign支持4种级别：</p>
+<p><img data-src="/assets/1525674373507.png" alt="1525674373507"></p>
+<ul>
+<li>NONE：不记录任何日志信息，这是默认值。</li>
+<li>BASIC：仅记录请求的方法，URL以及响应状态码和执行时间</li>
+<li>HEADERS：在BASIC的基础上，额外记录了请求和响应的头信息</li>
+<li>FULL：记录所有请求和响应的明细，包括头信息、请求体、元数据。</li>
+</ul>
+<p>3）在FeignClient中指定配置类：（可以省略）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient</span>(value = <span class="string">"user-service"</span>, fallback = UserClientFallback<span class="class">.<span class="keyword">class</span>, <span class="title">configuration</span> </span>= FeignConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">interface</span> <span class="title">UserClient</span> </span>&#123;</span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/user/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function">User <span class="title">queryById</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Long id)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>4）重启项目，即可看到每次访问的日志：</p>
+<p><img data-src="/assets/1525674544569.png" alt="1525674544569"></p>
+<h1 id="2-Zuul网关"><a href="#2-Zuul网关" class="headerlink" title="2.Zuul网关"></a>2.Zuul网关</h1><h2 id="2-1-简介"><a href="#2-1-简介" class="headerlink" title="2.1.简介"></a>2.1.简介</h2><p>官网：<a href="https://github.com/Netflix/zuul" target="_blank" rel="noopener">https://github.com/Netflix/zuul</a></p>
+<p> <img data-src="/assets/1525675037152.png" alt="1525675037152"></p>
+<p>Zuul：维基百科：</p>
+<p>电影《捉鬼敢死队》中的怪兽，Zuul，在纽约引发了巨大骚乱。</p>
+<p>事实上，在微服务架构中，Zuul就是守门的大Boss！一夫当关，万夫莫开！</p>
+<p><img data-src="/assets/1525675168152.png" alt="1525675168152"></p>
+<p>网关的核心功能是：过滤（鉴权）和路由</p>
+<h2 id="2-2-Zuul加入后的架构"><a href="#2-2-Zuul加入后的架构" class="headerlink" title="2.2.Zuul加入后的架构"></a>2.2.Zuul加入后的架构</h2><p><img data-src="/assets/1525675648881.png" alt="1525675648881"></p>
+<p><img data-src="/assets/1604456792781.png" alt="60445679278"></p>
+<ul>
+<li>不管是来自于客户端（PC或移动端）的请求，还是服务内部调用。一切对服务的请求都会经过Zuul这个网关，然后再由网关来实现 鉴权、动态路由等等操作。Zuul就是我们服务的统一入口。</li>
+</ul>
+<h2 id="2-3-快速入门"><a href="#2-3-快速入门" class="headerlink" title="2.3.快速入门"></a>2.3.快速入门</h2><h3 id="2-3-1-新建工程"><a href="#2-3-1-新建工程" class="headerlink" title="2.3.1.新建工程"></a>2.3.1.新建工程</h3><p>填写基本信息：</p>
+<p><img data-src="/assets/1604457755133.png" alt="1529223147899"></p>
+<p>添加Zuul依赖：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">"http://maven.apache.org/POM/4.0.0"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w2.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>cloud-demo<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>cn.itcast.demo<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>cn.itcast.demo<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>zuul-demo<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-zuul<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-3-2-编写启动类"><a href="#2-3-2-编写启动类" class="headerlink" title="2.3.2.编写启动类"></a>2.3.2.编写启动类</h3><p>通过<code>@EnableZuulProxy</code>注解开启Zuul的功能：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> cn.itcast;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.SpringApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.netflix.zuul.EnableZuulProxy;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.netflix.zuul.EnableZuulServer;</span><br><span class="line"></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableZuulProxy</span> <span class="comment">//开启网关功能</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ZuulApplication</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(ZuulApplication<span class="class">.<span class="keyword">class</span>,<span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-2-编写配置"><a href="#2-3-2-编写配置" class="headerlink" title="2.3.2.编写配置"></a>2.3.2.编写配置</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">10010</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">application:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">zuul-server</span>  <span class="comment"># 微服务名称</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-4-编写路由规则"><a href="#2-3-4-编写路由规则" class="headerlink" title="2.3.4.编写路由规则"></a>2.3.4.编写路由规则</h3><p>我们需要用Zuul来代理user-service服务，先看一下控制面板中的服务状态：</p>
+<p><img data-src="/assets/1604460532648.png" alt="60446053264"></p>
+<ul>
+<li>ip为：127.0.0.1</li>
+<li>端口为：8081</li>
+</ul>
+<p>映射规则：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">user-service:</span> <span class="comment"># 网关动态路由分发路由名称  </span></span><br><span class="line">      <span class="attr">path:</span> <span class="string">/user-service/**</span>  <span class="comment"># 映射路径  通过映射路径，关联真实的请求路径</span></span><br><span class="line">      <span class="attr">url:</span> <span class="string">http://localhost:8081</span>  <span class="comment"># 微服务真实路径</span></span><br></pre></td></tr></table></figure>
+
+<p>我们将符合<code>path</code> 规则的一切请求，都代理到 <code>url</code>参数指定的地址</p>
+<p>本例中，我们将 <code>/user-service/**</code>开头的请求，代理到<a href="http://127.0.0.1:8081" target="_blank" rel="noopener">http://127.0.0.1:8081</a></p>
+<h3 id="2-3-5-启动测试："><a href="#2-3-5-启动测试：" class="headerlink" title="2.3.5.启动测试："></a>2.3.5.启动测试：</h3><p>访问的路径中需要加上配置规则的映射路径，我们访问：<a href="http://127.0.0.1:10010/user-service/findById/10" target="_blank" rel="noopener">http://127.0.0.1:10010/user-service/findById/10</a></p>
+<p><img data-src="/assets/1604458786643.png" alt="60445878664"></p>
+<h2 id="2-4-面向服务的路由"><a href="#2-4-面向服务的路由" class="headerlink" title="2.4.面向服务的路由"></a>2.4.面向服务的路由</h2><p>在刚才的路由规则中，我们把路径对应的服务地址写死了！如果同一服务有多个实例的话，这样做显然就不合理了。</p>
+<p>我们应该根据服务的名称，去Eureka注册中心查找 服务对应的所有实例列表，然后进行动态路由才对！</p>
+<h3 id="2-4-1-添加Eureka客户端依赖"><a href="#2-4-1-添加Eureka客户端依赖" class="headerlink" title="2.4.1.添加Eureka客户端依赖"></a>2.4.1.添加Eureka客户端依赖</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-eureka-client<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-4-2-开启Eureka客户端发现功能"><a href="#2-4-2-开启Eureka客户端发现功能" class="headerlink" title="2.4.2.开启Eureka客户端发现功能"></a>2.4.2.开启Eureka客户端发现功能</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> cn.itcast;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.SpringApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.client.discovery.EnableDiscoveryClient;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.netflix.zuul.EnableZuulProxy;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.netflix.zuul.EnableZuulServer;</span><br><span class="line"></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableDiscoveryClient</span> <span class="comment">//开启eureka客户端功能</span></span><br><span class="line"><span class="meta">@EnableZuulProxy</span> <span class="comment">//开启网关功能</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ZuulApplication</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(ZuulApplication<span class="class">.<span class="keyword">class</span>,<span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-3-添加Eureka配置，获取服务信息"><a href="#2-4-3-添加Eureka配置，获取服务信息" class="headerlink" title="2.4.3.添加Eureka配置，获取服务信息"></a>2.4.3.添加Eureka配置，获取服务信息</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">eureka:</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">service-url:</span></span><br><span class="line">      <span class="attr">defaultZone:</span> <span class="string">http://localhost:10086/eureka</span>  <span class="comment">#eureka服务端连接地址</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-4-修改映射配置，通过服务名称获取"><a href="#2-4-4-修改映射配置，通过服务名称获取" class="headerlink" title="2.4.4.修改映射配置，通过服务名称获取"></a>2.4.4.修改映射配置，通过服务名称获取</h3><p>因为已经有了Eureka客户端，我们可以从Eureka获取服务的地址信息，因此映射时无需指定IP地址，而是通过服务名称来访问，而且Zuul已经集成了Ribbon的负载均衡功能。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">user-service:</span> <span class="comment"># 网关动态路由分发的微服务名称</span></span><br><span class="line">      <span class="attr">path:</span> <span class="string">/user-service/**</span>  <span class="comment"># 映射路径  通过映射路径，关联真实的请求路径</span></span><br><span class="line">      <span class="attr">serviceId:</span> <span class="string">user-service</span> <span class="comment"># eureka注册中心，服务id</span></span><br><span class="line">      <span class="comment"># url: http://localhost:8081  # 微服务真实路径</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-4-5-启动测试"><a href="#2-4-5-启动测试" class="headerlink" title="2.4.5.启动测试"></a>2.4.5.启动测试</h3><p>再次启动，这次Zuul进行代理时，会利用Ribbon进行负载均衡访问：</p>
+<p><img data-src="/assets/1604459313314.png" alt="1525677821212"></p>
+<p>​    </p>
+<p>日志中可以看到使用了负载均衡器：</p>
+<p><img data-src="/assets/1525677891119.png" alt="1525677891119"></p>
+<h2 id="2-5-简化的路由配置"><a href="#2-5-简化的路由配置" class="headerlink" title="2.5.简化的路由配置"></a>2.5.简化的路由配置</h2><p>在刚才的配置中，我们的规则是这样的：</p>
+<ul>
+<li><code>zuul.routes.&lt;route&gt;.path=/xxx/**</code>： 来指定映射路径。<code>&lt;route&gt;</code>是自定义的路由名</li>
+<li><code>zuul.routes.&lt;route&gt;.serviceId=/user-service</code>：来指定服务名。</li>
+</ul>
+<p>而大多数情况下，我们的<code>&lt;route&gt;</code>路由名称往往和 服务名会写成一样的。因此Zuul就提供了一种简化的配置语法：<code>zuul.routes.&lt;serviceId&gt;=&lt;path&gt;</code></p>
+<p>比方说上面我们关于user-service的配置可以简化为一条：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">user-service:</span> <span class="string">/user-service/**</span>  <span class="comment"># 路由分发规则简化配置</span></span><br></pre></td></tr></table></figure>
+
+<p>省去了对服务名称的配置。</p>
+<h2 id="2-6-默认的路由规则"><a href="#2-6-默认的路由规则" class="headerlink" title="2.6.默认的路由规则"></a>2.6.默认的路由规则</h2><p>在使用Zuul的过程中，上面讲述的规则已经大大的简化了配置项。但是当服务较多时，配置也是比较繁琐的。因此Zuul就指定了默认的路由规则：</p>
+<ul>
+<li>默认情况下，一切服务的映射路径就是服务名本身。<ul>
+<li>例如服务名为：<code>user-service</code>，则默认的映射路径就是：<code>/user-service/**</code></li>
+</ul>
+</li>
+</ul>
+<p>也就是说，刚才的映射规则我们完全不配置也是OK的，不信就试试看。</p>
+<p>如果想要禁用某个路由规则，可以这样：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">ignored-services:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">eureka-server</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="2-7-路由前缀"><a href="#2-7-路由前缀" class="headerlink" title="2.7.路由前缀"></a>2.7.路由前缀</h2><p>配置示例：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">user-service:</span> <span class="string">/user-service/**</span>  <span class="comment"># 路由分发规则简化配置</span></span><br><span class="line">      <span class="comment">#user-service: # 网关动态路由分发的微服务名称</span></span><br><span class="line">      <span class="comment">#path: /user-service/**  # 映射路径  通过映射路径，关联真实的请求路径</span></span><br><span class="line">      <span class="comment">#serviceId: user-service # eureka注册中心，服务id</span></span><br><span class="line">      <span class="comment"># url: http://localhost:8081  # 微服务真实路径</span></span><br><span class="line">  <span class="attr">ignored-services:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">eureka-server</span></span><br><span class="line">  <span class="attr">prefix:</span> <span class="string">/api</span>  <span class="comment"># 路由前缀</span></span><br></pre></td></tr></table></figure>
+
+<p>我们通过<code>zuul.prefix=/api</code>来指定了路由的前缀，这样在发起请求时，路径就要以/api开头。</p>
+<p>路径<code>/api/user-service/user/1</code>将会被代理到<code>/user-service/user/1</code></p>
+<h2 id="2-8-过滤器"><a href="#2-8-过滤器" class="headerlink" title="2.8.过滤器"></a>2.8.过滤器</h2><p>Zuul作为网关的其中一个重要功能，就是实现请求的鉴权。而这个动作我们往往是通过Zuul提供的过滤器来实现的。</p>
+<h3 id="2-8-1-ZuulFilter"><a href="#2-8-1-ZuulFilter" class="headerlink" title="2.8.1.ZuulFilter"></a>2.8.1.ZuulFilter</h3><p>ZuulFilter是过滤器的顶级父类。在这里我们看一下其中定义的4个最重要的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> ZuulFilter implements IZuulFilter&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">abstract</span> <span class="keyword">public</span> String <span class="title">filterType</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">abstract</span> <span class="keyword">public</span> <span class="keyword">int</span> <span class="title">filterOrder</span><span class="params">()</span></span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">shouldFilter</span><span class="params">()</span></span>;<span class="comment">// 来自IZuulFilter</span></span><br><span class="line"></span><br><span class="line">    <span class="function">Object <span class="title">run</span><span class="params">()</span> <span class="keyword">throws</span> ZuulException</span>;<span class="comment">// IZuulFilter</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>filterType</code>：返回字符串，代表过滤器的类型。包含以下4种： </p>
+<p>  <code>pre</code>：请求在被路由之前执行</p>
+<p>  <code>route</code>：在路由请求时调用</p>
+<p>  <code>post</code>：在routing和errror过滤器之后调用</p>
+<p>  <code>error</code>：处理请求时发生错误调用</p>
+</li>
+<li><p><code>filterOrder</code>：通过返回的int值来定义过滤器的执行顺序，数字越小优先级越高。</p>
+</li>
+<li><p><code>shouldFilter</code>：返回一个Boolean值，判断该过滤器是否需要执行。返回true执行，返回false不执行。</p>
+</li>
+<li><p><code>run</code>：过滤器的具体业务逻辑。</p>
+</li>
+</ul>
+<h3 id="2-8-2-过滤器执行生命周期："><a href="#2-8-2-过滤器执行生命周期：" class="headerlink" title="2.8.2.过滤器执行生命周期："></a>2.8.2.过滤器执行生命周期：</h3><p>这张是Zuul官网提供的请求生命周期图，清晰的表现了一次请求在各个过滤器的执行顺序。</p>
+<p><img data-src="/assets/1533945001048.png" alt="1533945001048"></p>
+<ul>
+<li>正常流程：<ul>
+<li>请求到达首先会经过pre类型过滤器，而后到达routing类型，进行路由，请求就到达真正的服务提供者，执行请求，返回结果后，会到达post过滤器。而后返回响应。</li>
+</ul>
+</li>
+<li>异常流程：<ul>
+<li>整个过程中，pre或者routing过滤器出现异常，都会直接进入error过滤器，再error处理完毕后，会将请求交给POST过滤器，最后返回给用户。</li>
+<li>如果是error过滤器自己出现异常，最终也会进入POST过滤器，而后返回。</li>
+<li>如果是POST过滤器出现异常，会跳转到error过滤器，但是与pre和routing不同的时，请求不会再到达POST过滤器了。</li>
+</ul>
+</li>
+</ul>
+<p>所有内置过滤器列表：</p>
+<p><img data-src="/assets/1604474654324.png" alt="1525682427811"></p>
+<h3 id="2-8-3-使用场景"><a href="#2-8-3-使用场景" class="headerlink" title="2.8.3.使用场景"></a>2.8.3.使用场景</h3><p>场景非常多：</p>
+<ul>
+<li>请求鉴权：一般放在pre类型，如果没有访问权限，直接就拦截了</li>
+<li>异常处理：一般会在error类型和post类型过滤器中结合来处理。</li>
+<li>服务调用时长统计：pre和post结合使用。</li>
+</ul>
+<h2 id="2-9-自定义过滤器"><a href="#2-9-自定义过滤器" class="headerlink" title="2.9.自定义过滤器"></a>2.9.自定义过滤器</h2><p>接下来我们来自定义一个过滤器，模拟一个登录的校验。基本逻辑：如果请求中有access-token参数，则认为请求有效，放行。</p>
+<h3 id="2-9-1-定义过滤器类"><a href="#2-9-1-定义过滤器类" class="headerlink" title="2.9.1.定义过滤器类"></a>2.9.1.定义过滤器类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> cn.itcast.filters;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.netflix.zuul.ZuulFilter;</span><br><span class="line"><span class="keyword">import</span> com.netflix.zuul.context.RequestContext;</span><br><span class="line"><span class="keyword">import</span> com.netflix.zuul.exception.ZuulException;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.lang.StringUtils;</span><br><span class="line"><span class="keyword">import</span> org.springframework.http.HttpStatus;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletRequest;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.FORM_BODY_WRAPPER_FILTER_ORDER;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LoginFilter</span> <span class="keyword">extends</span> <span class="title">ZuulFilter</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">filterType</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> PRE_TYPE;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">filterOrder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> FORM_BODY_WRAPPER_FILTER_ORDER+<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">shouldFilter</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">run</span><span class="params">()</span> <span class="keyword">throws</span> ZuulException </span>&#123;</span><br><span class="line">        <span class="comment">//如果请求中有access-token参数，则认为请求有效，放行。</span></span><br><span class="line">        <span class="comment">//1、获取请求对象 参考 FormBodyWrapperFilter获取请求对象</span></span><br><span class="line">        RequestContext ctx = RequestContext.getCurrentContext();</span><br><span class="line">        HttpServletRequest request = ctx.getRequest();</span><br><span class="line">        <span class="comment">//2获取请求参数</span></span><br><span class="line">        String token = request.getParameter(<span class="string">"access-token"</span>);</span><br><span class="line">        <span class="keyword">if</span>(StringUtils.isBlank(token))&#123;</span><br><span class="line">            <span class="comment">//未登录，拦截请求</span></span><br><span class="line">            ctx.setSendZuulResponse(<span class="keyword">false</span>);</span><br><span class="line">            <span class="comment">//返回权限不足状态码</span></span><br><span class="line">            ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;  <span class="comment">//登录了，放行请求</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-9-2-测试"><a href="#2-9-2-测试" class="headerlink" title="2.9.2.测试"></a>2.9.2.测试</h3><p>没有token参数时，访问失败：</p>
+<p><img data-src="/assets/1604474580424.png" alt="60447458042"></p>
+<p>添加token参数后：</p>
+<p><img data-src="/assets/1604474595462.png" alt="1525683354113"></p>
+<h2 id="2-10-负载均衡和熔断"><a href="#2-10-负载均衡和熔断" class="headerlink" title="2.10.负载均衡和熔断"></a>2.10.负载均衡和熔断</h2><p>Zuul中默认就已经集成了Ribbon负载均衡和Hystix熔断机制。但是所有的超时策略都是走的默认值，比如熔断超时时间只有1S，很容易就触发了。因此建议我们手动进行配置：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">hystrix:</span></span><br><span class="line">  <span class="attr">command:</span></span><br><span class="line">    <span class="attr">default:</span></span><br><span class="line">      <span class="attr">execution:</span></span><br><span class="line">        <span class="attr">isolation:</span></span><br><span class="line">          <span class="attr">thread:</span></span><br><span class="line">            <span class="attr">timeoutInMilliseconds:</span> <span class="number">6000</span></span><br><span class="line"><span class="attr">ribbon:</span></span><br><span class="line">  <span class="attr">ConnectTimeout:</span> <span class="number">1000</span></span><br><span class="line">  <span class="attr">ReadTimeout:</span> <span class="number">2000</span></span><br><span class="line">  <span class="attr">MaxAutoRetries:</span> <span class="number">0</span></span><br><span class="line">  <span class="attr">MaxAutoRetriesNextServer:</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="2-11-Zuul的高可用"><a href="#2-11-Zuul的高可用" class="headerlink" title="2.11.Zuul的高可用"></a>2.11.Zuul的高可用</h2><p>启动多个Zuul服务，自动注册到Eureka，形成集群。如果是服务内部访问，你访问Zuul，自动负载均衡，没问题。</p>
+<p>但是，Zuul更多是外部访问，PC端、移动端等。他们无法通过Eureka进行负载均衡，那么该怎么办？</p>
+<p>此时，我们会使用其它的服务网关，来对Zuul进行代理。比如：Nginx</p>
+<h1 id="3-了解知识："><a href="#3-了解知识：" class="headerlink" title="3.了解知识："></a>3.了解知识：</h1><h2 id="3-1-bootstrap-yml-和-application-yml"><a href="#3-1-bootstrap-yml-和-application-yml" class="headerlink" title="3.1.bootstrap.yml 和 application.yml"></a>3.1.bootstrap.yml 和 application.yml</h2><p>bootstrap.yml（bootstrap.properties）用来程序引导时执行，应用于更加早期配置信息读取，如可以使用来配置application.yml中使用到参数等</p>
+<p>application.yml（application.properties) 应用程序特有配置信息，可以用来配置后续各个模块中需使用的公共参数等。</p>
+<p>bootstrap.yml 先于 application.yml 加载</p>
+<p>技术上，bootstrap.yml 是被一个父级的 Spring ApplicationContext 加载的。</p>
+<p>这个父级的 Spring ApplicationContext是先加载的，在加载application.yml 的 ApplicationContext之前。</p>
+<p>可以通过设置<code>spring.cloud.bootstrap.enabled=false</code>来禁用<code>bootstrap</code>。</p>
+<h2 id="3-2-Spring-Boot多环境配置切换"><a href="#3-2-Spring-Boot多环境配置切换" class="headerlink" title="3.2.Spring Boot多环境配置切换"></a>3.2.Spring Boot多环境配置切换</h2><p>一般在一个项目中，总是会有好多个环境。</p>
+<p>比如：开发环境 -&gt; 测试环境 -&gt; 预发布环境 -&gt; 生产环境。</p>
+<p><img data-src="/assets/1604476475148.png" alt="60447647514"></p>
+<p>每个环境上的配置文件总是不一样的，甚至开发环境中每个开发者的环境可能也会有一点不同，配置读取可是一个让人有点伤脑筋的问题。</p>
+<p>Spring Boot提供了一种优先级配置读取的机制来帮助我们从这种困境中走出来。</p>
+<p>常规情况下，我们都知道Spring Boot的配置会从<code>application.yml或.properties</code>中读取</p>
+<p>根据Spring Boot的文档,配置使用的优先级从高到低的顺序，具体如下所示：</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span> 命令行参数。</span><br><span class="line"><span class="number">2.</span> 通过 System.getProperties() 获取的 Java 系统参数。</span><br><span class="line"><span class="number">3.</span> 操作系统环境变量。</span><br><span class="line"><span class="number">4.</span> 从 java:comp/env 得到的 JNDI 属性。</span><br><span class="line"><span class="number">5.</span> 通过 RandomValuePropertySource 生成的“random.*”属性。</span><br><span class="line"><span class="number">6.</span> 应用 Jar 文件之外的属性文件(application.properties/yml)。</span><br><span class="line"><span class="number">7.</span> 应用 Jar 文件内部的属性文件(application.properties/yml)。</span><br><span class="line"><span class="number">8.</span> 在应用配置 Java 类（包含“@Configuration”注解的 Java 类）中通过“@PropertySource”注解声明的属性文件。</span><br><span class="line"><span class="number">9.</span> 通过“SpringApplication.setDefaultProperties”声明的默认属性。</span><br></pre></td></tr></table></figure>
+
+<p>这意味着，如果Spring Boot在优先级更高的位置找到了配置，那么它就会无视低级的配置。</p>
+<p>方法一、不在配置文件写上配置节定义，而是通过执行时定位不同配置文件来区分。如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar demo.jar --spring.config.location=/path/test_evn.properties</span><br></pre></td></tr></table></figure>
+
+<p>方法二、在配置文件写上配置节定义，在执行时传递配置节需激活定义名称来区分。</p>
+<p>一般情况下我们这样定义环境：dev :开发，test：测试环境，prod：生产环境</p>
+<p>在yml 文件中配置的话，写法如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">profiles:</span></span><br><span class="line">    <span class="attr">active:</span> <span class="string">prod</span> <span class="comment">#生产环境</span></span><br><span class="line">  <span class="attr">datasource:</span></span><br><span class="line">    <span class="attr">driver-class-name:</span> <span class="string">com.mysql.jdbc.Driver</span></span><br><span class="line">    <span class="attr">url:</span> <span class="string">jdbc:mysql://127.0.0.1:3306/test</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">    <span class="attr">password:</span> <span class="string">root</span></span><br></pre></td></tr></table></figure>
+
+<p>启动Jar包的时候：Java -jar xxxxxx.jar spring.profiles.active=prod 也可以这样启动设置配置文件，但是这只是用于开发和测试</p>
+<h1 id="4-集中配置组件SpringCloudConfig-4-1-Spring-Cloud-Config简介"><a href="#4-集中配置组件SpringCloudConfig-4-1-Spring-Cloud-Config简介" class="headerlink" title="4. 集中配置组件SpringCloudConfig 4.1 Spring Cloud Config简介"></a>4. 集中配置组件SpringCloudConfig 4.1 Spring Cloud Config简介</h1><p>​    在分布式系统中，由于服务数量巨多，为了方便服务配置文件统一管理，实时更新，所以需要分布式配置中心组件。在Spring Cloud中，有分布式配置中心组件spring cloud config ，它支持配置服务放在配置服务的内存中（即本地），也支持放在远程Git仓库中。在spring cloud config 组件中，分两个角色，一是config server，二是config client。</p>
+<p>​    Config Server是一个可横向扩展、集中式的配置服务器，它用于集中管理应用程序各个环境下的配置，默认使用Git存储配置文件内容，也可以使用SVN存储，或者是本地文件存储。</p>
+<p>​    Config Client是Config Server的客户端，用于操作存储在Config Server中的配置内容。微服务在启动时会请求Config Server获取配置文件的内容，请求到后再启动容器。</p>
+<p>详细内容看在线文档： <a href="https://springcloud.cc/spring-cloud-config.html" target="_blank" rel="noopener">https://springcloud.cc/spring-cloud-config.html</a></p>
+<h2 id="4-2-配置服务端"><a href="#4-2-配置服务端" class="headerlink" title="4.2 配置服务端"></a>4.2 配置服务端</h2><h3 id="4-2-1-将配置文件提交到码云"><a href="#4-2-1-将配置文件提交到码云" class="headerlink" title="4.2.1 将配置文件提交到码云"></a>4.2.1 将配置文件提交到码云</h3><p>​    使用GitHub时，国内的用户经常遇到的问题是访问速度太慢，有时候还会出现无法连接的情况。如果我们希望体验Git飞一般的速度，可以使用国内的Git托管服务——<a href="https://gitee.com/" target="_blank" rel="noopener">码云</a>（<a href="https://gitee.com/" target="_blank" rel="noopener">gitee.com</a>）。</p>
+<p>​    和GitHub相比，码云也提供免费的Git仓库。此外，还集成了代码质量检测、项目演示等功能。对于团队协作开发，码云还提供了项目管理、代码托管、文档管理的服务。</p>
+<p>步骤：</p>
+<p>（1）浏览器打开gitee.com，注册用户 ，注册后登陆码云管理控制台</p>
+<p><img data-src="/assets/8_21.png" alt=""></p>
+<p>（2）创建仓库  javaee4  (点击右上角的加号 ，下拉菜单选择创建项目)</p>
+<p><img data-src="/assets/1604476876771.png" alt="60447687677"></p>
+<p>（3）上传配置文件，将user-service工程的application.yml改名为user-dev.yml后上传</p>
+<p><img data-src="/assets/1604476981117.png" alt="60447698111"></p>
+<p>可以通过拖拽的方式将文件上传上去</p>
+<p><img data-src="/assets/8_26.png" alt=""></p>
+<p>上传成功后列表可见</p>
+<p><img data-src="/assets/1604477058559.png" alt="60447705855"></p>
+<p>可以再次编辑此文件</p>
+<p><img data-src="/assets/1604478662261.png" alt="60447866226"></p>
+<p>文件命名规则：</p>
+<p>{application}-{profile}.yml或{application}-{profile}.properties</p>
+<p>application为应用名称 profile指的开发环境（用于区分开发环境，测试环境、生产环境等）</p>
+<p>（4）复制git地址 ,备用</p>
+<p><img data-src="/assets/8_24.png" alt=""></p>
+<p>地址为：<a href="https://gitee.com/sunmoon76/spring-cloud-config-test.git" target="_blank" rel="noopener">https://gitee.com/sunmoon76/spring-cloud-config-test.git</a></p>
+<h3 id="4-2-2-配置中心微服务"><a href="#4-2-2-配置中心微服务" class="headerlink" title="4.2.2 配置中心微服务"></a>4.2.2 配置中心微服务</h3><p>（1）创建工程模块 配置中心微服务  config-server  </p>
+<p><img data-src="/assets/1604477163724.png" alt="1576229334831"></p>
+<p> pom.xml引入依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-config-server<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-actuator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>（2）创建启动类ConfigServerApplication</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> cn.itcast;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.SpringApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.config.server.EnableConfigServer;</span><br><span class="line"></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableConfigServer</span> <span class="comment">//开启配置中心服务端应用</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConfigServerApplication</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(ConfigServerApplication<span class="class">.<span class="keyword">class</span>,<span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>（3）编写配置文件application.yml</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">12000</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">application:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">config-server</span></span><br><span class="line">  <span class="attr">cloud:</span></span><br><span class="line">    <span class="attr">config:</span></span><br><span class="line">      <span class="attr">server:</span></span><br><span class="line">        <span class="attr">git:</span></span><br><span class="line">          <span class="attr">uri:</span> <span class="string">https://gitee.com/zhangxian-vika/javaee4.git</span></span><br><span class="line">          <span class="attr">skip-ssl-validation:</span> <span class="literal">true</span>  <span class="comment"># 跳过SSL安全认证</span></span><br></pre></td></tr></table></figure>
+
+<p>（4）浏览器测试：<a href="http://localhost:12000/user-dev.yml" target="_blank" rel="noopener">http://localhost:12000/user-dev.yml</a> 可以看到配置内容</p>
+<h2 id="4-3-配置客户端"><a href="#4-3-配置客户端" class="headerlink" title="4.3 配置客户端"></a>4.3 配置客户端</h2><p>（1）在user-service工程添加依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-config<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-config-client<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>（2）在user-service工程中添加bootstrap.yml ,删除application.yml </p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">cloud:</span></span><br><span class="line">    <span class="attr">config:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">user</span></span><br><span class="line">      <span class="attr">profile:</span> <span class="string">dev</span></span><br><span class="line">      <span class="attr">label:</span> <span class="string">master</span></span><br><span class="line">      <span class="attr">uri:</span> <span class="string">http://127.0.0.1:12000</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="5-消息总线组件SpringCloudBus"><a href="#5-消息总线组件SpringCloudBus" class="headerlink" title="5 消息总线组件SpringCloudBus"></a>5 消息总线组件SpringCloudBus</h1><h2 id="5-1-SpringCloudBus简介"><a href="#5-1-SpringCloudBus简介" class="headerlink" title="5.1 SpringCloudBus简介"></a>5.1 SpringCloudBus简介</h2><p>​    如果我们更新码云中的配置文件，那客户端工程是否可以及时接受新的配置信息呢？我们现在来做有一个测试，修改一下码云中的配置文件中mysql的端口 或者连接不同mysql服务器 ，然后测试数据依然可以查询出来，证明修改服务器中的配置并没有更新立刻到工程，只有重新启动程序才会读取配置。 那我们如果想在不重启微服务的情况下更新配置如何来实现呢?  我们使用SpringCloudBus来实现配置的自动更新。</p>
+<p>工作流程图：</p>
+<p><img data-src="/assets/1584512626579.png" alt="1584512626579"></p>
+<h2 id="5-2-代码实现"><a href="#5-2-代码实现" class="headerlink" title="5.2 代码实现"></a>5.2 代码实现</h2><h3 id="5-2-1-配置服务端-config-server"><a href="#5-2-1-配置服务端-config-server" class="headerlink" title="5.2.1 配置服务端  config-server"></a>5.2.1 配置服务端  config-server</h3><p>（1）修改config-sever工程的pom.xml，引用依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-bus-amqp<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>（2）修改application.yml ，添加配置</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">rabbitmq:</span></span><br><span class="line">    <span class="attr">host:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span></span><br><span class="line">    <span class="attr">port:</span> <span class="number">5672</span></span><br><span class="line">    <span class="attr">virtual-host:</span> <span class="string">/leyou</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">leyou</span></span><br><span class="line">    <span class="attr">password:</span> <span class="string">leyou</span></span><br><span class="line"><span class="attr">management:</span> <span class="comment">#暴露触发消息总线的地址</span></span><br><span class="line">  <span class="attr">endpoints:</span></span><br><span class="line">    <span class="attr">web:</span></span><br><span class="line">      <span class="attr">exposure:</span></span><br><span class="line">        <span class="attr">include:</span> <span class="string">bus-refresh</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-2-配置客户端-user-service"><a href="#5-2-2-配置客户端-user-service" class="headerlink" title="5.2.2 配置客户端  user-service"></a>5.2.2 配置客户端  user-service</h3><p>我们还是以用户微服务模块为例，加入消息总线，确保RabbitMQ正常</p>
+<p>（1）修改user_service工程 ，引入依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-bus-amqp<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>（2）在user-service的bootstrap.yml添加rabbitMQ的配置文件</p>
+<p><img data-src="/assets/1604479832065.png" alt="60447983206"></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">8081</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">application:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">user-service</span> <span class="comment"># 作为注册中当前应用的唯一标记 应用名称  使用中划线拼接</span></span><br><span class="line">  <span class="attr">datasource:</span></span><br><span class="line">    <span class="attr">driver-class-name:</span> <span class="string">com.mysql.jdbc.Driver</span></span><br><span class="line">    <span class="attr">url:</span> <span class="string">jdbc:mysql://localhost:3306/springboot_db2</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">    <span class="attr">password:</span> <span class="string">root</span></span><br><span class="line">  <span class="attr">rabbitmq:</span></span><br><span class="line">    <span class="attr">host:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span></span><br><span class="line">    <span class="attr">port:</span> <span class="number">5672</span></span><br><span class="line">    <span class="attr">virtual-host:</span> <span class="string">/leyou</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">leyou</span></span><br><span class="line">    <span class="attr">password:</span> <span class="string">leyou</span></span><br><span class="line"><span class="attr">eureka:</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">service-url:</span></span><br><span class="line">      <span class="comment">#defaultZone: http://localhost:10086/eureka,http://localhost:10087/eureka  # eureka客户端连接服务端地址</span></span><br><span class="line">      <span class="attr">defaultZone:</span> <span class="string">http://localhost:10086/eureka</span>  <span class="comment"># eureka客户端连接服务端地址</span></span><br><span class="line">  <span class="attr">instance:</span></span><br><span class="line">    <span class="attr">ip-address:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span></span><br><span class="line">    <span class="attr">prefer-ip-address:</span> <span class="literal">true</span>  <span class="comment"># 优先使用IP地址进行服务注册和服务调用 默认：使用主机名</span></span><br><span class="line">    <span class="attr">instance-id:</span> <span class="string">$&#123;eureka.instance.ip-address&#125;:$&#123;server.port&#125;</span>  <span class="comment"># 自定义eureka管理平台展示服务信息的格式</span></span><br><span class="line">    <span class="attr">lease-renewal-interval-in-seconds:</span> <span class="number">30</span> <span class="comment">#服务续约(renew)的间隔，默认为30秒</span></span><br><span class="line">    <span class="attr">lease-expiration-duration-in-seconds:</span> <span class="number">90</span> <span class="comment">#服务失效时间，默认值90秒</span></span><br></pre></td></tr></table></figure>
+
+<p>（3）启动 注册中心、配置中心、user-service项目看是否正常运行</p>
+<p>（4）修改码云上的配置文件 ，将数据库改成另一个数据库springboot_db2</p>
+<p><strong>准备springboot_db2数据库和相关数据</strong></p>
+<p><img data-src="/assets/1604478997721.png" alt="60447899772"></p>
+<p><img data-src="/assets/1604478662261.png" alt="60447866226"></p>
+<p><img data-src="/assets/1604478701630.png" alt="60447870163"></p>
+<p>（5）测试    Url: <a href="http://127.0.0.1:12000/actuator/bus-refresh" target="_blank" rel="noopener">http://127.0.0.1:12000/actuator/bus-refresh</a>   Method: post  </p>
+<p><img data-src="/assets/1604480227081.png" alt="60448022708"></p>
+<p><img data-src="C:/Users/Sunmoon/Desktop/%E5%B0%B1%E4%B8%9A%E7%8F%AD/%E7%AC%94%E8%AE%B0/Spring/SpringCloud/assets/1604480260363.png" alt="60448026036"></p>
+<p><img data-src="/assets/1604480273543.png" alt="60448027354"></p>
+<p>（6）再次观察输出的数据是否是读取了springboot_db中的数据。</p>
+<p><img data-src="/assets/1604480329763.png" alt="60448032976"></p>
+<p>经常出的错误：415问题 </p>
+<p><img data-src="/assets/1584513241138.png" alt="1584513241138"></p>
+<p><img data-src="/assets/1584526763709.png" alt="1584526763709"></p>
+
+    </div>
+
+    
+    
+    
+    
+    <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束 <i class="fa fa-heart"></i> 感谢阅读-------------</div>
+
+    
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/images/wechat_channel.jpg">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Feign/" rel="tag"><i class="fa fa-tag"></i> Feign</a>
+              <a href="/tags/Zuul%E7%BD%91%E5%85%B3/" rel="tag"><i class="fa fa-tag"></i> Zuul网关</a>
+              <a href="/tags/%E9%9B%86%E4%B8%AD%E9%85%8D%E7%BD%AE%E7%BB%84%E4%BB%B6SpringCloudConfig/" rel="tag"><i class="fa fa-tag"></i> 集中配置组件SpringCloudConfig</a>
+              <a href="/tags/%E6%B6%88%E6%81%AF%E6%80%BB%E7%BA%BF%E7%BB%84%E4%BB%B6SpringCloudBus/" rel="tag"><i class="fa fa-tag"></i> 消息总线组件SpringCloudBus</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/11/03/SpringCloud-1/" rel="prev" title="SpringCloud-1">
+      <i class="fa fa-chevron-left"></i> SpringCloud-1
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sunmoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">850k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">12:53</span>
+</div>
+
+
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script defer src="//cdn.jsdelivr.net/gh/next-theme/theme-next-three@1/three.min.js"></script>
+    <script defer src="//cdn.jsdelivr.net/gh/next-theme/theme-next-three@1/canvas_lines.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <!-- 樱花特效 -->
+  
+      <script async src="/js/src/fairyDustCursor.js"></script>
+  
+
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
+    <!-- 页面点击小红心 -->
+    <script type="text/javascript" src="/js/src/love.js"></script>
+
+
+
