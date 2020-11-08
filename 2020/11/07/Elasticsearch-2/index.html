@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/wind32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/wind16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-center-atom.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"sunmoon.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.3","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="1. 集群和分布式集群和分布式的概念有联系也有区别，我们一起来看。 1.1 单点式服务的问题如图所示，是我们之前项目使用的架构方式，单点服务架构。整个服务使一个完整的项目，部署在一台tomcat，使用一个mysql数据库：  所有的请求，都由这一台服务器处理，存在很大风险： A：并发处理能力有限。因为单服务器的性能有限制。所以单台Tomcat的最大连接数有限制，   B：容错率低，一旦服务器故障，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Elasticsearch-2">
+<meta property="og:url" content="http://sunmoon.com/2020/11/07/Elasticsearch-2/index.html">
+<meta property="og:site_name" content="清风的博客">
+<meta property="og:description" content="1. 集群和分布式集群和分布式的概念有联系也有区别，我们一起来看。 1.1 单点式服务的问题如图所示，是我们之前项目使用的架构方式，单点服务架构。整个服务使一个完整的项目，部署在一台tomcat，使用一个mysql数据库：  所有的请求，都由这一台服务器处理，存在很大风险： A：并发处理能力有限。因为单服务器的性能有限制。所以单台Tomcat的最大连接数有限制，   B：容错率低，一旦服务器故障，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://sunmoon.com/assets/1543286552773.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1543286678122.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1543287433625.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1543287806342.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1543288401040.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1543288684507.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1543288817235.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1543289444226.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1553071443011.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1553072275126.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1575467048005.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1575467083227.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1575467250968.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1575467279027.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1588141227308.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604713722949.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604713766883.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1596177415223.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1553651744294.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1553651841987.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604714035383.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604714391304.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1596177823927.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1553654415047.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604714725335.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604715889765.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604717816832.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604718493294.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1554348626154.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1554348779338.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604719116357.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604719292735.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604719570021.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604719541213.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604731417578.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604731683879.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1554349744329.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1554349849946.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604732447109.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1554356961547.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1554357142660.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1526539628841.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1526539880872.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1526540053252.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604735852922.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1554378139181.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604736377576.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604736480478.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604736563051.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604736863430.png">
+<meta property="og:image" content="http://sunmoon.com/assets/image-20200716091141136.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1554382981272.png">
+<meta property="og:image" content="http://sunmoon.com/assets/1604740513917.png">
+<meta property="article:published_time" content="2020-11-07T13:12:09.000Z">
+<meta property="article:modified_time" content="2020-11-08T10:21:55.703Z">
+<meta property="article:author" content="Sunmoon">
+<meta property="article:tag" content="Elasticsearch集群">
+<meta property="article:tag" content="Elasticsearch客户端">
+<meta property="article:tag" content="SpringDataElasticsearch">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://sunmoon.com/assets/1543286552773.png">
+
+<link rel="canonical" href="http://sunmoon.com/2020/11/07/Elasticsearch-2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Elasticsearch-2 | 清风的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before, .use-motion .logo-line-after {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="清风的博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line-before"></i>
+      <h1 class="site-title">清风的博客</h1>
+      <i class="logo-line-after"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">山水有相逢，山不动，水不停</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-集群和分布式"><span class="nav-number">1.</span> <span class="nav-text">1. 集群和分布式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-单点式服务的问题"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 单点式服务的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-集群"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 集群</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-1-高可用集群"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.2.1 高可用集群</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-2-负载均衡集群"><span class="nav-number">1.2.2.</span> <span class="nav-text">1.2.2 负载均衡集群</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-3-科学计算集群"><span class="nav-number">1.2.3.</span> <span class="nav-text">1.2.3 科学计算集群</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-分布式web应用"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 分布式web应用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-1-单体应用"><span class="nav-number">1.3.1.</span> <span class="nav-text">1.3.1 单体应用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-2-分布式架构"><span class="nav-number">1.3.2.</span> <span class="nav-text">1.3.2 分布式架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-3-高可用分布式集群架构"><span class="nav-number">1.3.3.</span> <span class="nav-text">1.3.3 高可用分布式集群架构</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-Elasticsearch集群"><span class="nav-number">2.</span> <span class="nav-text">2.Elasticsearch集群</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-单点的问题"><span class="nav-number">2.1.</span> <span class="nav-text">2.1.单点的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-集群的结构"><span class="nav-number">2.2.</span> <span class="nav-text">2.2.集群的结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-1-数据分片"><span class="nav-number">2.2.1.</span> <span class="nav-text">2.2.1.数据分片</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-2-数据备份"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.2.2.数据备份</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-搭建集群"><span class="nav-number">2.3.</span> <span class="nav-text">2.3.搭建集群</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-测试集群中创建索引库"><span class="nav-number">2.4.</span> <span class="nav-text">2.4.测试集群中创建索引库</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-Elasticsearch客户端"><span class="nav-number">3.</span> <span class="nav-text">3.Elasticsearch客户端</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-客户端介绍"><span class="nav-number">3.1.</span> <span class="nav-text">3.1.客户端介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-创建Demo工程"><span class="nav-number">3.2.</span> <span class="nav-text">3.2.创建Demo工程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-1-初始化项目"><span class="nav-number">3.2.1.</span> <span class="nav-text">3.2.1.初始化项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-2-pom文件"><span class="nav-number">3.2.2.</span> <span class="nav-text">3.2.2.pom文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-3-配置文件"><span class="nav-number">3.2.3.</span> <span class="nav-text">3.2.3.配置文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-索引库及映射"><span class="nav-number">3.3.</span> <span class="nav-text">3.3.索引库及映射</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-4-索引数据操作"><span class="nav-number">3.4.</span> <span class="nav-text">3.4.索引数据操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-0-初始化客户端"><span class="nav-number">3.4.1.</span> <span class="nav-text">3.4.0.初始化客户端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-1-新增文档"><span class="nav-number">3.4.2.</span> <span class="nav-text">3.4.1.新增文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-2-查看文档"><span class="nav-number">3.4.3.</span> <span class="nav-text">3.4.2.查看文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-3-修改文档"><span class="nav-number">3.4.4.</span> <span class="nav-text">3.4.3.修改文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-4-删除文档"><span class="nav-number">3.4.5.</span> <span class="nav-text">3.4.4.删除文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-5-批量新增"><span class="nav-number">3.4.6.</span> <span class="nav-text">3.4.5.批量新增</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-5-搜索数据"><span class="nav-number">3.5.</span> <span class="nav-text">3.5.搜索数据</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-1-查询所有match-all"><span class="nav-number">3.5.1.</span> <span class="nav-text">3.5.1.查询所有match_all</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-2-关键字搜索match"><span class="nav-number">3.5.2.</span> <span class="nav-text">3.5.2.关键字搜索match</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-3-范围查询range"><span class="nav-number">3.5.3.</span> <span class="nav-text">3.5.3.范围查询range</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-4-source过滤"><span class="nav-number">3.5.4.</span> <span class="nav-text">3.5.4.source过滤</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-6-排序"><span class="nav-number">3.6.</span> <span class="nav-text">3.6.排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-7-分页"><span class="nav-number">3.7.</span> <span class="nav-text">3.7.分页</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-8-聚合"><span class="nav-number">3.8.</span> <span class="nav-text">3.8.聚合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-9-高亮（了解）"><span class="nav-number">3.9.</span> <span class="nav-text">3.9.高亮（了解）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-SpringDataElasticsearch"><span class="nav-number">4.</span> <span class="nav-text">4.SpringDataElasticsearch</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-什么是SpringDataElasticsearch"><span class="nav-number">4.1.</span> <span class="nav-text">4.1.什么是SpringDataElasticsearch</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-配置SpringDataElasticsearch"><span class="nav-number">4.2.</span> <span class="nav-text">4.2.配置SpringDataElasticsearch</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-3-索引库操作"><span class="nav-number">4.3.</span> <span class="nav-text">4.3.索引库操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-1-创建索引库-amp-并指定映射"><span class="nav-number">4.3.1.</span> <span class="nav-text">4.3.1.创建索引库&amp;并指定映射</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-4-索引数据CRUD"><span class="nav-number">4.4.</span> <span class="nav-text">4.4.索引数据CRUD</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-1-创建索引数据"><span class="nav-number">4.4.1.</span> <span class="nav-text">4.4.1.创建索引数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-2-查询索引数据"><span class="nav-number">4.4.2.</span> <span class="nav-text">4.4.2.查询索引数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-3-自定义方法查询"><span class="nav-number">4.4.3.</span> <span class="nav-text">4.4.3.自定义方法查询</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-5-原生查询"><span class="nav-number">4.5.</span> <span class="nav-text">4.5.原生查询</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-经验值"><span class="nav-number">5.</span> <span class="nav-text">5.经验值</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-往ES6同一个索引库中插入多个类型会报错"><span class="nav-number">5.1.</span> <span class="nav-text">1.往ES6同一个索引库中插入多个类型会报错</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-出现的问题"><span class="nav-number">5.2.</span> <span class="nav-text">2.出现的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-问题的分析"><span class="nav-number">5.3.</span> <span class="nav-text">3.问题的分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-问题解决办法"><span class="nav-number">5.4.</span> <span class="nav-text">4.问题解决办法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-知识扩展：自定义结果处理器"><span class="nav-number">6.</span> <span class="nav-text">6.知识扩展：自定义结果处理器</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sunmoon"
+      src="/images/sunmoon.jpg">
+  <p class="site-author-name" itemprop="name">Sunmoon</p>
+  <div class="site-description" itemprop="description">阴晴雨雪，月圆月缺</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">65</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">201</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Sunmoon76" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Sunmoon76" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/gongleman9016/" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;gongleman9016&#x2F;" rel="noopener" target="_blank"><i class="fa fa-cube fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/Sunmoon76" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://sunmoon.com/2020/11/07/Elasticsearch-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/sunmoon.jpg">
+      <meta itemprop="name" content="Sunmoon">
+      <meta itemprop="description" content="阴晴雨雪，月圆月缺">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="清风的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Elasticsearch-2
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-11-07 21:12:09" itemprop="dateCreated datePublished" datetime="2020-11-07T21:12:09+08:00">2020-11-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-11-08 18:21:55" itemprop="dateModified" datetime="2020-11-08T18:21:55+08:00">2020-11-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2/" itemprop="url" rel="index"><span itemprop="name">全文检索</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>35k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>31 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-集群和分布式"><a href="#1-集群和分布式" class="headerlink" title="1. 集群和分布式"></a>1. 集群和分布式</h1><p>集群和分布式的概念有联系也有区别，我们一起来看。</p>
+<h2 id="1-1-单点式服务的问题"><a href="#1-1-单点式服务的问题" class="headerlink" title="1.1 单点式服务的问题"></a>1.1 单点式服务的问题</h2><p>如图所示，是我们之前项目使用的架构方式，单点服务架构。整个服务使一个完整的项目，部署在一台tomcat，使用一个mysql数据库：</p>
+<p><img data-src="/assets/1543286552773.png" alt="1543286552773"></p>
+<p>所有的请求，都由这一台服务器处理，存在很大风险：</p>
+<pre><code>A：并发处理能力有限。因为单服务器的性能有限制。所以单台Tomcat的最大连接数有限制， 
+
+B：容错率低，一旦服务器故障，整个服务就无法访问了。
+
+    eBay于 1999年6月停机22小时的事故，中断了约230万的拍卖，使eBay的股票下降了9.2个百分点。
+
+C：单台服务器计算能力低，无法完成复杂的海量数据计算。</code></pre><p>如何解决这样的问题呢？那就需要使用计算机集群了。</p>
+<a id="more"></a>
+
+<h2 id="1-2-集群"><a href="#1-2-集群" class="headerlink" title="1.2 集群"></a>1.2 集群</h2><p>来看下维基百科对集群的介绍：</p>
+<p><img data-src="/assets/1543286678122.png" alt="1543286678122"></p>
+<p>集群是==一组计算机==高度紧密协作，完成计算工作。其中的每个计算机称为一个==节点==。根据这些计算机的协作方式不同或者目的不同，我们将集群分成三类：</p>
+<ul>
+<li>高可用集群</li>
+<li>负载均衡集群 </li>
+<li>科学计算集群（分布式处理）</li>
+</ul>
+<p>上述几种集群方式并非必须独立使用，我们在系统架构时经常会组合使用。</p>
+<h3 id="1-2-1-高可用集群"><a href="#1-2-1-高可用集群" class="headerlink" title="1.2.1 高可用集群"></a>1.2.1 高可用集群</h3><p>High availability Cluster高可用群集，简称HAC。其设计思想是为了避免出现单点故障问题，在故障时可以==快速恢复，快速继续提供服务==。</p>
+<p><img data-src="/assets/1543287433625.png" alt="1543287433625"></p>
+<p>如图所示，集群中两台计算机node01和node02，两者共享资源，处理业务也基本一致，互为==主从==。当node01工作时，node02就处于待命状态。所有业务在Node01上运行，若发生故障服务和资源会转移到Node02上。</p>
+<p>这种架构保证了服务的高可用，但是闲置的节点是对资源的一种浪费。</p>
+<h3 id="1-2-2-负载均衡集群"><a href="#1-2-2-负载均衡集群" class="headerlink" title="1.2.2 负载均衡集群"></a>1.2.2 负载均衡集群</h3><p>Load Balancing负载均衡，集群中的每一台计算机都来完成相同业务，不分主次。当用户请求到达时，通过某种算法，让请求均衡的分发到集群中的每个节点，充分利用每个节点的资源。如图所示：</p>
+<p><img data-src="/assets/1543287806342.png" alt="1543287806342"></p>
+<p>因为每个节点业务相同，如果某个节点出现故障，只需要把请求分发到其它节点即可。</p>
+<h3 id="1-2-3-科学计算集群"><a href="#1-2-3-科学计算集群" class="headerlink" title="1.2.3 科学计算集群"></a>1.2.3 科学计算集群</h3><p>因为硬件设备的限制，单台计算机的处理性能是有上限的，如果计算需要的资源超过了单台计算机的能力，该怎么办呢？此时就可以使用科学计算集群。</p>
+<p>我们把复杂任务拆分成一个个小的子任务，然后分配到集群中的不同节点上完成，最后再把计算结果汇总。这样大量低廉的PC机互联起来，组成一个”超级计算机”以解决复杂的计算任务。</p>
+<p><img data-src="/assets/1543288401040.png" alt="1543288401040"></p>
+<p>这样的方式也称为==<strong>分布式运算或者分布式集群</strong>==，集群中的每个节点完成==<strong>不同任务</strong>==。</p>
+<h2 id="1-3-分布式web应用"><a href="#1-3-分布式web应用" class="headerlink" title="1.3 分布式web应用"></a>1.3 分布式web应用</h2><p>上述计算机协作的集群方式任何领域都可以使用，在web开发中也是如此，不过有一些细节的不同。我们以一个电商网站为例，看看几种架构方式：</p>
+<h3 id="1-3-1-单体应用"><a href="#1-3-1-单体应用" class="headerlink" title="1.3.1 单体应用"></a>1.3.1 单体应用</h3><p>所有业务在一个系统中完成：</p>
+<p><img data-src="/assets/1543288684507.png" alt="1543288684507"></p>
+<p>出现的问题：</p>
+<ul>
+<li>系统庞大，功能耦合，难以维护</li>
+<li>并发能力差，容易出现单点故障</li>
+<li>无法针对不同功能进行优化</li>
+</ul>
+<h3 id="1-3-2-分布式架构"><a href="#1-3-2-分布式架构" class="headerlink" title="1.3.2 分布式架构"></a>1.3.2 分布式架构</h3><p>按照上面的分布式集群概念，集群中的每个节点完成不同业务。在web开发中也是如此，我们把完整系统进行拆分，形成独立系统，然后部署到不同的tomcat节点，不同节点通过网络通信，相互协作。</p>
+<p><img data-src="/assets/1543288817235.png" alt="1543288817235"></p>
+<p>这样就将复杂系统细分，但是却带来了另一个问题，就是单个节点故障会导致整个系统不完整。</p>
+<h3 id="1-3-3-高可用分布式集群架构"><a href="#1-3-3-高可用分布式集群架构" class="headerlink" title="1.3.3 高可用分布式集群架构"></a>1.3.3 高可用分布式集群架构</h3><p>为了解决上面所述的单点故障问题，我们可以为分布式系统中的每个节点都部署负载均衡节点，即：每个业务系统都有一个负载均衡的小集群。</p>
+<p><img data-src="/assets/1543289444226.png" alt="1543289444226"></p>
+<h1 id="2-Elasticsearch集群"><a href="#2-Elasticsearch集群" class="headerlink" title="2.Elasticsearch集群"></a>2.Elasticsearch集群</h1><p>在之前的课程中，我们都是使用单点的elasticsearch，接下来我们会学习如何搭建Elasticsearch的集群。</p>
+<h2 id="2-1-单点的问题"><a href="#2-1-单点的问题" class="headerlink" title="2.1.单点的问题"></a>2.1.单点的问题</h2><p>单点的elasticsearch存在哪些可能出现的问题呢？</p>
+<ul>
+<li>单台机器存储容量有限</li>
+<li>单服务器容易出现单点故障，无法实现高可用</li>
+<li>单服务的并发处理能力有限</li>
+</ul>
+<p>所以，为了应对这些问题，我们需要对elasticsearch搭建集群</p>
+<h2 id="2-2-集群的结构"><a href="#2-2-集群的结构" class="headerlink" title="2.2.集群的结构"></a>2.2.集群的结构</h2><p>那么，到底该如何搭建集群呢？</p>
+<h3 id="2-2-1-数据分片"><a href="#2-2-1-数据分片" class="headerlink" title="2.2.1.数据分片"></a>2.2.1.数据分片</h3><p>首先，我们面临的第一个问题就是数据量太大，单点存储量有限的问题。</p>
+<p>大家觉得应该如何解决？</p>
+<p>没错，我们可以把数据拆分成多份，每一份存储到不同机器节点（node），从而实现减少每个节点数据量的目的。这就是数据的分布式存储，也叫做：<code>数据分片（Shard）</code>。</p>
+<p><img data-src="/assets/1553071443011.png" alt="1553071443011"></p>
+<h3 id="2-2-2-数据备份"><a href="#2-2-2-数据备份" class="headerlink" title="2.2.2.数据备份"></a>2.2.2.数据备份</h3><p>数据分片解决了海量数据存储的问题，但是如果出现单点故障，那么分片数据就不再完整，这又该如何解决呢？</p>
+<p>没错，就像大家为了备份手机数据，会额外存储一份到移动硬盘一样。我们可以给每个分片数据进行备份，存储到其它节点，防止数据丢失，这就是数据备份，也叫<code>数据副本（replica）</code>。</p>
+<p>数据备份可以保证高可用，但是每个分片备份一份，所需要的节点数量就会翻一倍，成本实在是太高了！</p>
+<p>为了在高可用和成本间寻求平衡，我们可以这样做：</p>
+<ul>
+<li>首先对数据分片，存储到不同节点</li>
+<li>然后对每个分片进行备份，放到对方节点，完成互相备份</li>
+</ul>
+<p>这样可以大大减少所需要的服务节点数量，如图，我们以3分片，每个分片备份一份为例：</p>
+<p><img data-src="/assets/1553072275126.png" alt="1553072275126"></p>
+<p>在这个集群中，如果出现单节点故障，并不会导致数据缺失，所以保证了集群的高可用，同时也减少了节点中数据存储量。并且因为是多个节点存储数据，因此用户请求也会分发到不同服务器，并发能力也得到了一定的提升。</p>
+<h2 id="2-3-搭建集群"><a href="#2-3-搭建集群" class="headerlink" title="2.3.搭建集群"></a>2.3.搭建集群</h2><p>集群需要多台机器，我们这里用一台机器来模拟，因此我们需要在一台虚拟机中部署多个elasticsearch节点，每个elasticsearch的端口都必须不一样。</p>
+<p>我们计划集群名称为：leyou-elastic，部署3个elasticsearch节点，分别是：</p>
+<p>node-01：http端口9201，TCP端口9301</p>
+<p>node-02：http端口9202，TCP端口9302</p>
+<p>node-03：http端口9203，TCP端口9303</p>
+<p>先把目前电脑上的es和kibana关闭</p>
+<p>第一步：把昨天安装的ES软件中复制一份，把复制出来软件中的data文件夹的数据删除（<strong>一定要做</strong>）</p>
+<p><img data-src="/assets/1575467048005.png" alt="1575467048005"></p>
+<p>第二步：复制es软件粘贴3次，分别改名</p>
+<p><img data-src="/assets/1575467083227.png" alt="1575467083227"></p>
+<p>第三步：修改每一个节点的配置文件 config下的elasticsearch.yml,下面已第一份配置文件为例</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#允许跨域名访问</span></span><br><span class="line"><span class="attr">http.cors.enabled:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">http.cors.allow-origin:</span> <span class="string">"*"</span></span><br><span class="line"><span class="attr">network.host:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span></span><br><span class="line"><span class="comment"># 集群的名称</span></span><br><span class="line"><span class="attr">cluster.name:</span> <span class="string">leyou-elastic</span></span><br><span class="line"><span class="comment">#当前节点名称 每个节点不一样（修改）</span></span><br><span class="line"><span class="attr">node.name:</span> <span class="string">node-01</span></span><br><span class="line"><span class="comment">#数据的存放路径 每个节点不一样（修改）</span></span><br><span class="line"><span class="attr">path.data:</span> <span class="string">d:\class\sorfware\elasticsearch-9201\data</span></span><br><span class="line"><span class="comment">#日志的存放路径 每个节点不一样（修改）</span></span><br><span class="line"><span class="attr">path.logs:</span> <span class="string">d:\class\sorfware\elasticsearch-9201\logs</span></span><br><span class="line"><span class="comment"># http协议的对外端口 每个节点不一样（修改）</span></span><br><span class="line"><span class="attr">http.port:</span> <span class="number">9201</span></span><br><span class="line"><span class="comment"># TCP协议对外端口 每个节点不一样（修改）</span></span><br><span class="line"><span class="attr">transport.tcp.port:</span> <span class="number">9301</span></span><br><span class="line"><span class="comment">#三个节点相互发现</span></span><br><span class="line"><span class="attr">discovery.zen.ping.unicast.hosts:</span> <span class="string">["127.0.0.1:9301","127.0.0.1:9302","127.0.0.1:9303"]</span></span><br><span class="line"><span class="comment">#声明大于几个的投票主节点有效，请设置为（nodes / 2） + 1</span></span><br><span class="line"><span class="attr">discovery.zen.minimum_master_nodes:</span> <span class="number">2</span></span><br><span class="line"><span class="comment"># 是否为主节点</span></span><br><span class="line"><span class="attr">node.master:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>按照上面的内容修改其他两个配置文件，注意：保存时一定确保文件的保存编码是utf-8</p>
+<p><img data-src="/assets/1575467250968.png" alt="1575467250968"></p>
+<p>第四步：启动集群</p>
+<p>把三个节点分别启动,启动时不要着急，要一个一个地启动</p>
+<p>使用head插件查看</p>
+<p><img data-src="/assets/1575467279027.png" alt="1575467279027"></p>
+<h2 id="2-4-测试集群中创建索引库"><a href="#2-4-测试集群中创建索引库" class="headerlink" title="2.4.测试集群中创建索引库"></a>2.4.测试集群中创建索引库</h2><p>配置kibana，再重启</p>
+<p><img data-src="/assets/1588141227308.png" alt="1588141227308"></p>
+<p>搭建集群以后就要创建索引库了，那么问题来了，当我们创建一个索引库后，数据会保存到哪个服务节点上呢？如果我们对索引库分片，那么每个片会在哪个节点呢？</p>
+<p>这个要亲自尝试才知道。</p>
+<p>还记得创建索引库的API吗？</p>
+<ul>
+<li><p>请求方式：PUT</p>
+</li>
+<li><p>请求路径：/索引库名</p>
+</li>
+<li><p>请求参数：json格式：</p>
+  <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"settings"</span>: &#123;</span><br><span class="line">        <span class="attr">"属性名"</span>: <span class="string">"属性值"</span></span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>  settings：就是索引库设置，其中可以定义索引库的各种属性，目前我们可以不设置，都走默认。</p>
+</li>
+</ul>
+<p>这里给搭建看看集群中分片和备份的设置方式，示例：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">PUT /heima</span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">"settings"</span>: &#123;</span><br><span class="line">    <span class="attr">"number_of_shards"</span>: <span class="number">3</span>,</span><br><span class="line">    <span class="attr">"number_of_replicas"</span>: <span class="number">1</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里有两个配置：</p>
+<ul>
+<li>number_of_shards：分片数量，这里设置为3</li>
+<li>number_of_replicas：副本数量，这里设置为1，每个分片一个备份，一个原始数据，共2份。</li>
+</ul>
+<p><img data-src="/assets/1604713722949.png" alt="60471372294"></p>
+<p>通过chrome浏览器的head查看，我们可以查看到分片的存储结构：</p>
+<p><img data-src="/assets/1604713766883.png" alt="1575467330712"></p>
+<p>可以看到，heima这个索引库，有三个分片，分别是0、1、2，每个分片有1个副本，共6份。</p>
+<ul>
+<li>node-01上保存了0号分片和1号分片的副本</li>
+<li>node-02上保存了1号分片和2号分片的副本</li>
+<li>node-03上保存了0号分片和2号分片的副本</li>
+</ul>
+<h1 id="3-Elasticsearch客户端"><a href="#3-Elasticsearch客户端" class="headerlink" title="3.Elasticsearch客户端"></a>3.Elasticsearch客户端</h1><h2 id="3-1-客户端介绍"><a href="#3-1-客户端介绍" class="headerlink" title="3.1.客户端介绍"></a>3.1.客户端介绍</h2><p>在elasticsearch官网中提供了各种语言的客户端：<a href="https://www.elastic.co/guide/en/elasticsearch/client/index.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/client/index.html</a></p>
+<p><img data-src="/assets/1596177415223.png" alt="1596177415223"></p>
+<p>我们接下来要学习的是JavaRestClient的客户端。</p>
+<p>注意点击进入后，选择版本到<code>6.2</code>，因为我们之前按照的都是<code>6.2.4</code>版本：</p>
+<p><img data-src="/assets/1553651744294.png" alt="1553651744294"></p>
+<p>然后选择<code>Java High Level Rest Client</code>版本：</p>
+<p><img data-src="/assets/1553651841987.png" alt="1553651841987"></p>
+<h2 id="3-2-创建Demo工程"><a href="#3-2-创建Demo工程" class="headerlink" title="3.2.创建Demo工程"></a>3.2.创建Demo工程</h2><h3 id="3-2-1-初始化项目"><a href="#3-2-1-初始化项目" class="headerlink" title="3.2.1.初始化项目"></a>3.2.1.初始化项目</h3><p>选择用maven创建：</p>
+<p><img data-src="/assets/1604714035383.png" alt="1553657415587"></p>
+<h3 id="3-2-2-pom文件"><a href="#3-2-2-pom文件" class="headerlink" title="3.2.2.pom文件"></a>3.2.2.pom文件</h3><p>注意，这里我们直接导入了SpringBoot的启动器，方便后续讲解。不过还需要手动引入elasticsearch的High-level-Rest-Client的依赖：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">"http://maven.apache.org/POM/4.0.0"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>cn.itcast.demo<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>es-demo<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.3.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-logging<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.google.code.gson<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>gson<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.8.5<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.commons<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>commons-lang3<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.8.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">         <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>commons-beanutils<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>commons-beanutils<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.9.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.elasticsearch.client<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>elasticsearch-rest-high-level-client<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>6.4.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-3-配置文件"><a href="#3-2-3-配置文件" class="headerlink" title="3.2.3.配置文件"></a>3.2.3.配置文件</h3><p>我们在resource下引入application.yml： 先空着，一会儿用</p>
+<p> <img data-src="/assets/1604714391304.png" alt="60471439130"></p>
+<p>编写引导类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ESApplication</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(ESApplication<span class="class">.<span class="keyword">class</span>,<span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="3-3-索引库及映射"><a href="#3-3-索引库及映射" class="headerlink" title="3.3.索引库及映射"></a>3.3.索引库及映射</h2><p><img data-src="/assets/1596177823927.png" alt="1596177823927"></p>
+<p>创建索引库的同时，我们也会创建type及其映射关系，但是这些操作不建议使用java客户端完成，原因如下：</p>
+<ul>
+<li><p>索引库和映射往往是初始化时完成，不需要频繁操作，不如提前配置好</p>
+</li>
+<li><p>官方提供的创建索引库及映射API非常繁琐，需要通过字符串拼接json结构：</p>
+<p>  <img data-src="/assets/1553654415047.png" alt="1553654415047"></p>
+</li>
+</ul>
+<p>因此，这些操作建议还是使用我们昨天学习的Rest风格API去实现。</p>
+<p>我们接下来以这样一个商品数据为例来创建索引库：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Goods</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String title; <span class="comment">//标题</span></span><br><span class="line">    <span class="keyword">private</span> String category;<span class="comment">// 分类</span></span><br><span class="line">    <span class="keyword">private</span> String brand; <span class="comment">// 品牌</span></span><br><span class="line">    <span class="keyword">private</span> Double price; <span class="comment">// 价格</span></span><br><span class="line">    <span class="keyword">private</span> String images; <span class="comment">// 图片地址</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>分析一下数据结构：</p>
+<ul>
+<li>id：可以认为是主键，将来判断数据是否重复的标示，不分词，可以使用keyword类型</li>
+<li>title：搜索字段，需要分词，可以用text类型</li>
+<li>category：商品分类，这个是整体，不分词，可以使用keyword类型</li>
+<li>brand：品牌，与分类类似，不分词，可以使用keyword类型</li>
+<li>price：价格，这个是double类型</li>
+<li>images：图片，用来展示的字段，不搜索，index为false，不分词，可以使用keyword类型</li>
+</ul>
+<p>我们可以编写这样的映射配置：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">PUT /leyou</span><br><span class="line">&#123;</span><br><span class="line">    <span class="attr">"settings"</span>: &#123;</span><br><span class="line">      <span class="attr">"number_of_shards"</span>: <span class="number">3</span>,</span><br><span class="line">      <span class="attr">"number_of_replicas"</span>: <span class="number">1</span></span><br><span class="line">    &#125;, </span><br><span class="line">    <span class="attr">"mappings"</span>: &#123;</span><br><span class="line">        <span class="attr">"goods"</span>: &#123;</span><br><span class="line">            <span class="attr">"properties"</span>: &#123;</span><br><span class="line">                <span class="attr">"id"</span>: &#123;</span><br><span class="line">                    <span class="attr">"type"</span>: <span class="string">"keyword"</span></span><br><span class="line">                &#125;,</span><br><span class="line">                <span class="attr">"title"</span>: &#123;</span><br><span class="line">                    <span class="attr">"type"</span>: <span class="string">"text"</span>,</span><br><span class="line">                    <span class="attr">"analyzer"</span>: <span class="string">"ik_max_word"</span></span><br><span class="line">                &#125;,</span><br><span class="line">                <span class="attr">"category"</span>: &#123;</span><br><span class="line">                    <span class="attr">"type"</span>: <span class="string">"keyword"</span></span><br><span class="line">                &#125;,</span><br><span class="line">                <span class="attr">"brand"</span>: &#123;</span><br><span class="line">                    <span class="attr">"type"</span>: <span class="string">"keyword"</span></span><br><span class="line">                &#125;,</span><br><span class="line">                <span class="attr">"images"</span>: &#123;</span><br><span class="line">                    <span class="attr">"type"</span>: <span class="string">"keyword"</span>,</span><br><span class="line">                    <span class="attr">"index"</span>:  <span class="literal">false</span></span><br><span class="line">                &#125;,</span><br><span class="line">                <span class="attr">"price"</span>: &#123;</span><br><span class="line">                    <span class="attr">"type"</span>: <span class="string">"double"</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意：java基于restful风格操作es,索引库和映射创建，不要是java代码完成，基于kibana语法完成</p>
+<p><img data-src="/assets/1604714725335.png" alt="60471472533"></p>
+<h2 id="3-4-索引数据操作"><a href="#3-4-索引数据操作" class="headerlink" title="3.4.索引数据操作"></a>3.4.索引数据操作</h2><p>有了索引库，我们接下来看看如何新增索引数据</p>
+<h3 id="3-4-0-初始化客户端"><a href="#3-4-0-初始化客户端" class="headerlink" title="3.4.0.初始化客户端"></a>3.4.0.初始化客户端</h3><p>完成任何操作都需要通过HighLevelRestClient客户端，看下如何创建。</p>
+<p>我们先编写一个测试类：</p>
+<p>然后再@Before的方法中编写client初始化：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RestClientTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> RestHighLevelClient client = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Gson gson = <span class="keyword">new</span> Gson();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Before</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">before</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//连接索引库，获取操作客户端</span></span><br><span class="line">        client = <span class="keyword">new</span> RestHighLevelClient(RestClient.builder(</span><br><span class="line">                HttpHost.create(<span class="string">"http://127.0.0.1:9201"</span>),</span><br><span class="line">                HttpHost.create(<span class="string">"http://127.0.0.1:9202"</span>),</span><br><span class="line">                HttpHost.create(<span class="string">"http://127.0.0.1:9203"</span>)</span><br><span class="line">        ));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@After</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">after</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">        <span class="comment">//关闭索引库连接</span></span><br><span class="line">        client.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-4-1-新增文档"><a href="#3-4-1-新增文档" class="headerlink" title="3.4.1.新增文档"></a>3.4.1.新增文档</h3><p>示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 新增文档(数据)</span></span><br><span class="line"><span class="comment">* <span class="doctag">@throws</span> Exception</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testAddDoc</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//文档数据</span></span><br><span class="line">    Goods goods = <span class="keyword">new</span> Goods(<span class="number">1L</span>, <span class="string">"小米手机9"</span>, <span class="string">" 手机"</span>,</span><br><span class="line">                            <span class="string">"小米"</span>, <span class="number">3499.00</span>, <span class="string">"http://image.leyou.com/13123.jpg"</span>);</span><br><span class="line">    <span class="comment">//转为json</span></span><br><span class="line">    String json = gson.toJson(goods);</span><br><span class="line">    <span class="comment">//创建索引的请求对象</span></span><br><span class="line">    IndexRequest indexRequest = <span class="keyword">new</span> IndexRequest(<span class="string">"leyou"</span>,<span class="string">"goods"</span>,goods.getId().toString());</span><br><span class="line">    <span class="comment">//绑定数据到请求对象,  参数一：json串，参数二：指定传递的类型</span></span><br><span class="line">    indexRequest.source(json, XContentType.JSON);</span><br><span class="line">    <span class="comment">//创建文档数据,参数一：索引的请求对象</span></span><br><span class="line">    client.index(indexRequest, RequestOptions.DEFAULT);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看下响应：</p>
+<p><img data-src="/assets/1604715889765.png" alt="60471588976"></p>
+<h3 id="3-4-2-查看文档"><a href="#3-4-2-查看文档" class="headerlink" title="3.4.2.查看文档"></a>3.4.2.查看文档</h3><p>根据rest风格，查看应该是根据id进行get查询，难点是对结果的解析：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testFindById</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//创建查询请求对象</span></span><br><span class="line">    GetRequest getRequest = <span class="keyword">new</span> GetRequest(<span class="string">"leyou"</span>,<span class="string">"goods"</span>,<span class="string">"1"</span>);</span><br><span class="line">    <span class="comment">//查询文档数据</span></span><br><span class="line">    GetResponse response = client.get(getRequest, RequestOptions.DEFAULT);</span><br><span class="line">    String json = response.getSourceAsString();</span><br><span class="line">    <span class="comment">//解析json</span></span><br><span class="line">    Goods goods = gson.fromJson(json, Goods<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    System.out.println(goods);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Goods&#123;<span class="attribute">id</span>=1, <span class="attribute">title</span>=<span class="string">'小米手机9'</span>, <span class="attribute">category</span>=<span class="string">' 手机'</span>, <span class="attribute">brand</span>=<span class="string">'小米'</span>, <span class="attribute">price</span>=3499.0, <span class="attribute">images</span>=<span class="string">'http://image.leyou.com/13123.jpg'</span>&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-4-3-修改文档"><a href="#3-4-3-修改文档" class="headerlink" title="3.4.3.修改文档"></a>3.4.3.修改文档</h3><p>新增时，如果传递的id是已经存在的，则会完成修改操作，如果不存在，则是新增。</p>
+<p>补充另一种修改操作（实现相对麻烦，了解即可）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testUpdateDoc</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//文档数据</span></span><br><span class="line">    <span class="comment">/*Goods goods = new Goods(1L, "小米手机10", " 手机",</span></span><br><span class="line"><span class="comment">                "小米", 3499.00, "http://image.leyou.com/13123.jpg");*/</span></span><br><span class="line">    UpdateRequest updateRequest = <span class="keyword">new</span> UpdateRequest(<span class="string">"leyou"</span>,<span class="string">"goods"</span>,<span class="string">"1"</span>);</span><br><span class="line">    updateRequest.doc(XContentType.JSON,<span class="string">"id"</span>,<span class="number">1</span>,<span class="string">"title"</span>,<span class="string">"小米手机10"</span>);</span><br><span class="line">    <span class="comment">//修改文档数据</span></span><br><span class="line">    client.update(updateRequest,RequestOptions.DEFAULT);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-4-4-删除文档"><a href="#3-4-4-删除文档" class="headerlink" title="3.4.4.删除文档"></a>3.4.4.删除文档</h3><p>根据id删除：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testDelete</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    DeleteRequest deleteRequest = <span class="keyword">new</span> DeleteRequest(<span class="string">"leyou"</span>,<span class="string">"goods"</span>,<span class="string">"1"</span>);</span><br><span class="line">    <span class="comment">//删除文档</span></span><br><span class="line">    client.delete(deleteRequest,RequestOptions.DEFAULT);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-5-批量新增"><a href="#3-4-5-批量新增" class="headerlink" title="3.4.5.批量新增"></a>3.4.5.批量新增</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testBatchAdd</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">        <span class="comment">// 准备文档数据：</span></span><br><span class="line">        List&lt;Goods&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        list.add(<span class="keyword">new</span> Goods(<span class="number">1L</span>, <span class="string">"小米手机7"</span>, <span class="string">"手机"</span>, <span class="string">"小米"</span>, <span class="number">3299.00</span>, <span class="string">"http://image.leyou.com/13123.jpg"</span>));</span><br><span class="line">        list.add(<span class="keyword">new</span> Goods(<span class="number">2L</span>, <span class="string">"坚果手机R1"</span>, <span class="string">"手机"</span>, <span class="string">"锤子"</span>, <span class="number">3699.00</span>, <span class="string">"http://image.leyou.com/13123.jpg"</span>));</span><br><span class="line">        list.add(<span class="keyword">new</span> Goods(<span class="number">3L</span>, <span class="string">"华为META10"</span>, <span class="string">"手机"</span>, <span class="string">"华为"</span>, <span class="number">4499.00</span>, <span class="string">"http://image.leyou.com/13123.jpg"</span>));</span><br><span class="line">        list.add(<span class="keyword">new</span> Goods(<span class="number">4L</span>, <span class="string">"小米Mix2S"</span>, <span class="string">"手机"</span>, <span class="string">"小米"</span>, <span class="number">4299.00</span>, <span class="string">"http://image.leyou.com/13123.jpg"</span>));</span><br><span class="line">        list.add(<span class="keyword">new</span> Goods(<span class="number">5L</span>, <span class="string">"荣耀V10"</span>, <span class="string">"手机"</span>, <span class="string">"华为"</span>, <span class="number">2799.00</span>, <span class="string">"http://image.leyou.com/13123.jpg"</span>));</span><br><span class="line">        <span class="comment">//批量新增请求对象</span></span><br><span class="line">        BulkRequest bulkRequest = <span class="keyword">new</span> BulkRequest();</span><br><span class="line">        <span class="keyword">for</span> (Goods goods : list) &#123;</span><br><span class="line">            bulkRequest.add(<span class="keyword">new</span> IndexRequest(<span class="string">"leyou"</span>,<span class="string">"goods"</span>,goods.getId().toString()).source(gson.toJson(goods),XContentType.JSON));</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//批量新增</span></span><br><span class="line">        client.bulk(bulkRequest,RequestOptions.DEFAULT);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键点：</p>
+<ul>
+<li><p>BulkRequest：批量请求，可以添加多个IndexRequest对象，完成批处理</p>
+<p>  <img data-src="/assets/1604717816832.png" alt="60471781683"></p>
+</li>
+</ul>
+<h2 id="3-5-搜索数据"><a href="#3-5-搜索数据" class="headerlink" title="3.5.搜索数据"></a>3.5.搜索数据</h2><h3 id="3-5-1-查询所有match-all"><a href="#3-5-1-查询所有match-all" class="headerlink" title="3.5.1.查询所有match_all"></a>3.5.1.查询所有match_all</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">GET /leyou/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"match_all"</span>: &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testMatchAll</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//构建查询请求对象</span></span><br><span class="line">    SearchRequest searchRequest= <span class="keyword">new</span> SearchRequest(<span class="string">"leyou"</span>);</span><br><span class="line">    <span class="comment">//创建查询构建器</span></span><br><span class="line">    SearchSourceBuilder sourceBuilder = <span class="keyword">new</span> SearchSourceBuilder();</span><br><span class="line">    <span class="comment">//设置查询对象</span></span><br><span class="line">    sourceBuilder.query(QueryBuilders.matchAllQuery());</span><br><span class="line">    <span class="comment">//执行查询操作</span></span><br><span class="line">    SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);</span><br><span class="line">    <span class="comment">//获取查询的数据结果</span></span><br><span class="line">    SearchHits hits = response.getHits();</span><br><span class="line">    <span class="keyword">long</span> totalHits = hits.getTotalHits();</span><br><span class="line">    System.out.println(<span class="string">"满足查询条件的总记录数："</span>+totalHits);</span><br><span class="line">    <span class="comment">//获取查询结果集</span></span><br><span class="line">    SearchHit[] searchHits = hits.getHits();</span><br><span class="line">    <span class="keyword">for</span> (SearchHit searchHit : searchHits) &#123;</span><br><span class="line">        <span class="comment">//获取查询结果数据  json格式字符串</span></span><br><span class="line">        String sourceAsString = searchHit.getSourceAsString();</span><br><span class="line">        <span class="comment">//解析json</span></span><br><span class="line">        Goods goods = gson.fromJson(sourceAsString, Goods<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        System.out.println(goods);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<p><img data-src="/assets/1604718493294.png" alt="60471849329"></p>
+<p>注意，上面的代码中，搜索条件是通过<code>sourceBuilder.query(QueryBuilders.matchAllQuery())</code>来添加的。这个<code>query()</code>方法接受的参数是：<code>QueryBuilder</code>接口类型。</p>
+<p>这个接口提供了很多实现类，分别对应我们在之前中学习的不同类型的查询，例如：term查询、match查询、range查询、boolean查询等，如图：</p>
+<p><img data-src="/assets/1554348626154.png" alt="1554348626154"> </p>
+<p>因此，我们如果要使用各种不同查询，其实仅仅是传递给<code>sourceBuilder.query()</code>方法的参数不同而已。而这些实现类不需要我们去<code>new</code>，官方提供了<code>QueryBuilders</code>工厂帮我们构建各种实现类：</p>
+<p><img data-src="/assets/1554348779338.png" alt="1554348779338"> </p>
+<h3 id="3-5-2-关键字搜索match"><a href="#3-5-2-关键字搜索match" class="headerlink" title="3.5.2.关键字搜索match"></a>3.5.2.关键字搜索match</h3><p>其实搜索类型的变化，仅仅是利用QueryBuilders构建的查询对象不同而已，其他代码基本一致：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 匹配查询</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testMatchQuery</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//构建查询请求对象  默认执行的是查询所有操作</span></span><br><span class="line">    SearchRequest searchRequest= <span class="keyword">new</span> SearchRequest(<span class="string">"leyou"</span>);</span><br><span class="line">    <span class="comment">//创建查询构建器</span></span><br><span class="line">    SearchSourceBuilder sourceBuilder = <span class="keyword">new</span> SearchSourceBuilder();</span><br><span class="line">    <span class="comment">//设置查询对象</span></span><br><span class="line">    sourceBuilder.query(QueryBuilders.matchQuery(<span class="string">"title"</span>,<span class="string">"小米手机"</span>).operator(Operator.AND));</span><br><span class="line">    <span class="comment">//关联查询方式到请求对象中</span></span><br><span class="line">    searchRequest.source(sourceBuilder);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行查询操作</span></span><br><span class="line">    SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);</span><br><span class="line">    <span class="comment">//解析结果集</span></span><br><span class="line">    printResult(response);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>结果：</p>
+<p><img data-src="/assets/1604719116357.png" alt="60471911635"></p>
+<p>因此，我们可以把这段代码封装，然后把查询条件作为参数传递：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">GET /leyou/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"match"</span>: &#123;</span><br><span class="line">      <span class="string">"title"</span>: <span class="string">"手机"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 打印结果集方法</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> response</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">printResult</span><span class="params">(SearchResponse response)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//获取查询的数据结果</span></span><br><span class="line">    SearchHits hits = response.getHits();</span><br><span class="line">    <span class="keyword">long</span> totalHits = hits.getTotalHits();</span><br><span class="line">    System.out.println(<span class="string">"满足查询条件的总记录数："</span>+totalHits);</span><br><span class="line">    <span class="comment">//获取查询结果集</span></span><br><span class="line">    SearchHit[] searchHits = hits.getHits();</span><br><span class="line">    <span class="keyword">for</span> (SearchHit searchHit : searchHits) &#123;</span><br><span class="line">        <span class="comment">//获取查询结果数据  json格式字符串</span></span><br><span class="line">        String sourceAsString = searchHit.getSourceAsString();</span><br><span class="line">        <span class="comment">//解析json</span></span><br><span class="line">        Goods goods = gson.fromJson(sourceAsString, Goods<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        System.out.println(goods);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>调用封装的方法，并传递查询条件：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 匹配查询</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testMatchQuery</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//构建查询请求对象  默认执行的是查询所有操作</span></span><br><span class="line">    SearchRequest searchRequest= <span class="keyword">new</span> SearchRequest(<span class="string">"leyou"</span>);</span><br><span class="line">    <span class="comment">//创建查询构建器</span></span><br><span class="line">    SearchSourceBuilder sourceBuilder = <span class="keyword">new</span> SearchSourceBuilder();</span><br><span class="line">    <span class="comment">//设置查询对象</span></span><br><span class="line">    sourceBuilder.query(QueryBuilders.matchQuery(<span class="string">"title"</span>,<span class="string">"小米手机"</span>).operator(Operator.AND));</span><br><span class="line">    <span class="comment">//关联查询方式到请求对象中</span></span><br><span class="line">    searchRequest.source(sourceBuilder);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行查询操作</span></span><br><span class="line">    SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);</span><br><span class="line">    <span class="comment">//解析结果集</span></span><br><span class="line">    printResult(response);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-5-3-范围查询range"><a href="#3-5-3-范围查询range" class="headerlink" title="3.5.3.范围查询range"></a>3.5.3.范围查询range</h3><p>与页面上一样，支持下面的范围关键字：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>gt(Object from)</td>
+<td>大于</td>
+</tr>
+<tr>
+<td>gte(Object from)</td>
+<td>大于等于</td>
+</tr>
+<tr>
+<td>lt(Object from)</td>
+<td>小于</td>
+</tr>
+<tr>
+<td>lte(Object from)</td>
+<td>小于等于</td>
+</tr>
+</tbody></table>
+<p>示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">GET /leyou/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"range"</span>: &#123;</span><br><span class="line">      <span class="string">"price"</span>: &#123;</span><br><span class="line">        <span class="string">"gt"</span>: <span class="number">1000</span>,</span><br><span class="line">        <span class="string">"lte"</span>: <span class="number">4000</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 范围查询</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testRangeQuery</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//构建查询请求对象  默认执行的是查询所有操作</span></span><br><span class="line">    SearchRequest searchRequest= <span class="keyword">new</span> SearchRequest(<span class="string">"leyou"</span>);</span><br><span class="line">    <span class="comment">//创建查询构建器</span></span><br><span class="line">    SearchSourceBuilder sourceBuilder = <span class="keyword">new</span> SearchSourceBuilder();</span><br><span class="line">    <span class="comment">//设置查询对象</span></span><br><span class="line">    sourceBuilder.query(QueryBuilders.rangeQuery(<span class="string">"price"</span>).gte(<span class="number">3000</span>).lte(<span class="number">5000</span>));</span><br><span class="line">    <span class="comment">//关联查询方式到请求对象中</span></span><br><span class="line">    searchRequest.source(sourceBuilder);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行查询操作</span></span><br><span class="line">    SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);</span><br><span class="line">    <span class="comment">//解析结果集</span></span><br><span class="line">    printResult(response);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<p><img data-src="/assets/1604719292735.png" alt="60471929273"></p>
+<p>其他各种查询：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 词条查询</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testTermQuery</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//构建查询请求对象  默认执行的是查询所有操作</span></span><br><span class="line">    SearchRequest searchRequest= <span class="keyword">new</span> SearchRequest(<span class="string">"leyou"</span>);</span><br><span class="line">    <span class="comment">//创建查询构建器</span></span><br><span class="line">    SearchSourceBuilder sourceBuilder = <span class="keyword">new</span> SearchSourceBuilder();</span><br><span class="line">    <span class="comment">//设置查询对象</span></span><br><span class="line">    sourceBuilder.query(QueryBuilders.termQuery(<span class="string">"title"</span>,<span class="string">"小米"</span>));</span><br><span class="line">    <span class="comment">//关联查询方式到请求对象中</span></span><br><span class="line">    searchRequest.source(sourceBuilder);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行查询操作</span></span><br><span class="line">    SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);</span><br><span class="line">    <span class="comment">//解析结果集</span></span><br><span class="line">    printResult(response);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">* 组合查询</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testBoolQuery</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//构建查询请求对象  默认执行的是查询所有操作</span></span><br><span class="line">    SearchRequest searchRequest= <span class="keyword">new</span> SearchRequest(<span class="string">"leyou"</span>);</span><br><span class="line">    <span class="comment">//创建查询构建器</span></span><br><span class="line">    SearchSourceBuilder sourceBuilder = <span class="keyword">new</span> SearchSourceBuilder();</span><br><span class="line">    <span class="comment">//设置查询对象</span></span><br><span class="line">    sourceBuilder.query(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery(<span class="string">"title"</span>,<span class="string">"小米"</span>)).must(QueryBuilders.rangeQuery(<span class="string">"price"</span>).gte(<span class="number">4000</span>).lte(<span class="number">5000</span>)));</span><br><span class="line">    <span class="comment">//关联查询方式到请求对象中</span></span><br><span class="line">    searchRequest.source(sourceBuilder);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行查询操作</span></span><br><span class="line">    SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);</span><br><span class="line">    <span class="comment">//解析结果集</span></span><br><span class="line">    printResult(response);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-5-4-source过滤"><a href="#3-5-4-source过滤" class="headerlink" title="3.5.4.source过滤"></a>3.5.4.source过滤</h3><p>默认情况下，索引库中所有数据都会返回，如果我们想只返回部分字段，可以通过source filter来控制。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">GET /leyou/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"range"</span>: &#123;</span><br><span class="line">      <span class="string">"price"</span>: &#123;</span><br><span class="line">        <span class="string">"gt"</span>: <span class="number">1000</span>,</span><br><span class="line">        <span class="string">"lte"</span>: <span class="number">4000</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"_source"</span>: [<span class="string">"id"</span>,<span class="string">"title"</span>,<span class="string">"price"</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testFilterResult</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//构建查询请求对象  默认执行的是查询所有操作</span></span><br><span class="line">    SearchRequest searchRequest= <span class="keyword">new</span> SearchRequest(<span class="string">"leyou"</span>);</span><br><span class="line">    <span class="comment">//创建查询构建器</span></span><br><span class="line">    SearchSourceBuilder sourceBuilder = <span class="keyword">new</span> SearchSourceBuilder();</span><br><span class="line">    <span class="comment">//设置查询对象</span></span><br><span class="line">    sourceBuilder.query(QueryBuilders.rangeQuery(<span class="string">"price"</span>).gte(<span class="number">3000</span>).lte(<span class="number">5000</span>));</span><br><span class="line">    <span class="comment">//设置展示的内容</span></span><br><span class="line">    sourceBuilder.fetchSource(<span class="keyword">new</span> String[]&#123;<span class="string">"title"</span>,<span class="string">"price"</span>&#125;,<span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//关联查询方式到请求对象中</span></span><br><span class="line">    searchRequest.source(sourceBuilder);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行查询操作</span></span><br><span class="line">    SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);</span><br><span class="line">    <span class="comment">//解析结果集</span></span><br><span class="line">    printResult(response);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键代码：</p>
+<p><img data-src="/assets/1604719570021.png" alt="60471957002"></p>
+<p>结果：</p>
+<p><img data-src="/assets/1604719541213.png" alt="60471954121"></p>
+<p>结果过滤：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">searchSourceBuilder.query(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery(<span class="string">"title"</span>,<span class="string">"华为手机"</span>)).filter(QueryBuilders.rangeQuery(<span class="string">"price"</span>).gte(<span class="number">4000</span>).lte(<span class="number">5000</span>)));</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-6-排序"><a href="#3-6-排序" class="headerlink" title="3.6.排序"></a>3.6.排序</h2><p>依然是通过sourceBuilder来配置：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">GET /leyou/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"query"</span>: &#123;</span><br><span class="line">    <span class="string">"range"</span>: &#123;</span><br><span class="line">      <span class="string">"price"</span>: &#123;</span><br><span class="line">        <span class="string">"gt"</span>: <span class="number">1000</span>,</span><br><span class="line">        <span class="string">"lte"</span>: <span class="number">4000</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"_source"</span>: [<span class="string">"id"</span>,<span class="string">"title"</span>,<span class="string">"price"</span>]</span><br><span class="line">  , <span class="string">"sort"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"price"</span>: &#123;</span><br><span class="line">        <span class="string">"order"</span>: <span class="string">"desc"</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 排序</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testSortQuery</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//构建查询请求对象  默认执行的是查询所有操作</span></span><br><span class="line">    SearchRequest searchRequest= <span class="keyword">new</span> SearchRequest(<span class="string">"leyou"</span>);</span><br><span class="line">    <span class="comment">//创建查询构建器</span></span><br><span class="line">    SearchSourceBuilder sourceBuilder = <span class="keyword">new</span> SearchSourceBuilder();</span><br><span class="line">    <span class="comment">//设置查询对象</span></span><br><span class="line">    sourceBuilder.query(QueryBuilders.rangeQuery(<span class="string">"price"</span>).gte(<span class="number">1000</span>).lte(<span class="number">5000</span>));</span><br><span class="line">    <span class="comment">//设置排序条件</span></span><br><span class="line">    sourceBuilder.sort(<span class="string">"price"</span>, SortOrder.DESC);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//关联查询方式到请求对象中</span></span><br><span class="line">    searchRequest.source(sourceBuilder);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行查询操作</span></span><br><span class="line">    SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);</span><br><span class="line">    <span class="comment">//解析结果集</span></span><br><span class="line">    printResult(response);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<p><img data-src="/assets/1604731417578.png" alt="60473141757"></p>
+<h2 id="3-7-分页"><a href="#3-7-分页" class="headerlink" title="3.7.分页"></a>3.7.分页</h2><p>分页需要视图层传递两个参数给我们：</p>
+<ul>
+<li>当前页：page</li>
+<li>每页大小：size</li>
+</ul>
+<p>而elasticsearch中需要的不是当前页，而是起始位置，还好有公式可以计算出：</p>
+<ul>
+<li>起始位置：start = (page - 1) * size</li>
+</ul>
+<p>代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 分页</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testPageQuery</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//构建查询请求对象  默认执行的是查询所有操作</span></span><br><span class="line">    SearchRequest searchRequest= <span class="keyword">new</span> SearchRequest(<span class="string">"leyou"</span>);</span><br><span class="line">    <span class="comment">//创建查询构建器</span></span><br><span class="line">    SearchSourceBuilder sourceBuilder = <span class="keyword">new</span> SearchSourceBuilder();</span><br><span class="line">    <span class="comment">//设置查询对象</span></span><br><span class="line">    sourceBuilder.query(QueryBuilders.rangeQuery(<span class="string">"price"</span>).gte(<span class="number">1000</span>).lte(<span class="number">5000</span>));</span><br><span class="line">    <span class="comment">//设置排序条件</span></span><br><span class="line">    sourceBuilder.sort(<span class="string">"price"</span>, SortOrder.DESC);</span><br><span class="line">    <span class="comment">//设置分页条件</span></span><br><span class="line">    <span class="keyword">int</span> page=<span class="number">2</span>;</span><br><span class="line">    <span class="keyword">int</span> size=<span class="number">3</span>;</span><br><span class="line">    <span class="keyword">int</span> index=(page-<span class="number">1</span>)*size;</span><br><span class="line">    sourceBuilder.from(index);<span class="comment">//分页起始值</span></span><br><span class="line">    sourceBuilder.size(size);<span class="comment">//每页记录数</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//关联查询方式到请求对象中</span></span><br><span class="line">    searchRequest.source(sourceBuilder);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行查询操作</span></span><br><span class="line">    SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);</span><br><span class="line">    <span class="comment">//解析结果集</span></span><br><span class="line">    printResult(response);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>当我们传page为2的时候，结果是：</p>
+<p><img data-src="/assets/1604731683879.png" alt="60473168387"></p>
+<h2 id="3-8-聚合"><a href="#3-8-聚合" class="headerlink" title="3.8.聚合"></a>3.8.聚合</h2><p>再来试试聚合，我们这里以brand字段来聚合，看看有哪些品牌，每个品牌有多少数量。</p>
+<p>聚合关键是弄清楚这几点：</p>
+<ul>
+<li>聚合的字段是什么</li>
+<li>聚合的类型是什么</li>
+<li>给聚合起个名</li>
+</ul>
+<p>与查询类似，聚合条件通过<code>sourceBuilder.aggregation()</code>方法来设置，而参数是一个接口：<code>AggregationBuilder</code>，这个接口也有大量的实现类，代表不同的聚合种类：</p>
+<p><img data-src="/assets/1554349744329.png" alt="1554349744329"> </p>
+<p>同样，我们也不需要自己去new，官方提供了一个工厂帮我们创建实例：</p>
+<p><img data-src="/assets/1554349849946.png" alt="1554349849946"> </p>
+<p>kibana查询语句</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">GET /leyou/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">"query"</span>: &#123;</span><br><span class="line">    <span class="attr">"match_all"</span>: &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">  , <span class="attr">"aggs"</span>: &#123;</span><br><span class="line">    <span class="attr">"brandAggs"</span>: &#123;</span><br><span class="line">      <span class="attr">"terms"</span>: &#123;</span><br><span class="line">        <span class="attr">"field"</span>: <span class="string">"brand"</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"size"</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>代码示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 聚合查询</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testAggsQuery</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//构建查询请求对象  默认执行的是查询所有操作</span></span><br><span class="line">    SearchRequest searchRequest= <span class="keyword">new</span> SearchRequest(<span class="string">"leyou"</span>);</span><br><span class="line">    <span class="comment">//创建查询构建器</span></span><br><span class="line">    SearchSourceBuilder sourceBuilder = <span class="keyword">new</span> SearchSourceBuilder();</span><br><span class="line">    <span class="comment">//设置查询对象</span></span><br><span class="line">    sourceBuilder.query(QueryBuilders.matchAllQuery());</span><br><span class="line">    sourceBuilder.size(<span class="number">0</span>);<span class="comment">//每页记录数</span></span><br><span class="line">    <span class="comment">//设置聚合条件   指定聚合三要素：聚合方式  聚合名称  聚合字段</span></span><br><span class="line">    sourceBuilder.aggregation(AggregationBuilders.terms(<span class="string">"brandAgg"</span>).field(<span class="string">"brand"</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">//关联查询方式到请求对象中</span></span><br><span class="line">    searchRequest.source(sourceBuilder);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行查询操作</span></span><br><span class="line">    SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);</span><br><span class="line">    <span class="comment">//获取聚合结果</span></span><br><span class="line">    Aggregations aggregations = response.getAggregations();</span><br><span class="line">    Terms brandAgg = aggregations.get(<span class="string">"brandAgg"</span>);</span><br><span class="line">    List&lt;? extends Terms.Bucket&gt; buckets = brandAgg.getBuckets();</span><br><span class="line">    <span class="keyword">for</span> (Terms.Bucket bucket : buckets) &#123;</span><br><span class="line">        System.out.println(<span class="string">"聚合得到的品牌是："</span>+bucket.getKeyAsString());</span><br><span class="line">        System.out.println(<span class="string">"该名牌对应的商品数量是："</span>+bucket.getDocCount());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//解析结果集</span></span><br><span class="line">    printResult(response);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<p><img data-src="/assets/1604732447109.png" alt="60473244710"></p>
+<h2 id="3-9-高亮（了解）"><a href="#3-9-高亮（了解）" class="headerlink" title="3.9.高亮（了解）"></a>3.9.高亮（了解）</h2><p>kibana代码</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">GET /leyou/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">"query"</span>: &#123;</span><br><span class="line">    <span class="attr">"match"</span>: &#123;</span><br><span class="line">      <span class="attr">"title"</span>: <span class="string">"手机"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"highlight"</span>: &#123;</span><br><span class="line">    <span class="attr">"fields"</span>: &#123;</span><br><span class="line">      <span class="attr">"title"</span>: &#123;&#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"pre_tags"</span>: <span class="string">"&lt;font color='red'&gt;"</span>,</span><br><span class="line">    <span class="attr">"post_tags"</span>: <span class="string">"&lt;/font&gt;"</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">* 高亮查询</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testHighLightQuery</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//构建查询请求对象  默认执行的是查询所有操作</span></span><br><span class="line">    SearchRequest searchRequest= <span class="keyword">new</span> SearchRequest(<span class="string">"leyou"</span>);</span><br><span class="line">    <span class="comment">//创建查询构建器</span></span><br><span class="line">    SearchSourceBuilder sourceBuilder = <span class="keyword">new</span> SearchSourceBuilder();</span><br><span class="line">    <span class="comment">//设置查询对象</span></span><br><span class="line">    sourceBuilder.query(QueryBuilders.matchQuery(<span class="string">"title"</span>,<span class="string">"手机"</span>));</span><br><span class="line">    <span class="comment">//设置高亮条件</span></span><br><span class="line">    HighlightBuilder highlightBuilder = <span class="keyword">new</span> HighlightBuilder();</span><br><span class="line">    highlightBuilder.field(<span class="string">"title"</span>);<span class="comment">//高亮字段</span></span><br><span class="line">    highlightBuilder.preTags(<span class="string">"&lt;font color='red'&gt;"</span>);<span class="comment">//高亮前缀</span></span><br><span class="line">    highlightBuilder.postTags(<span class="string">"&lt;/font&gt;"</span>);<span class="comment">//高亮后缀</span></span><br><span class="line"></span><br><span class="line">    sourceBuilder.highlighter(highlightBuilder);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//关联查询方式到请求对象中</span></span><br><span class="line">    searchRequest.source(sourceBuilder);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行查询操作</span></span><br><span class="line">    SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);</span><br><span class="line">    <span class="comment">//解析结果集</span></span><br><span class="line">    <span class="comment">//获取查询的数据结果</span></span><br><span class="line">    SearchHits hits = response.getHits();</span><br><span class="line">    <span class="keyword">long</span> totalHits = hits.getTotalHits();</span><br><span class="line">    System.out.println(<span class="string">"满足查询条件的总记录数："</span>+totalHits);</span><br><span class="line">    <span class="comment">//获取查询结果集</span></span><br><span class="line">    SearchHit[] searchHits = hits.getHits();</span><br><span class="line">    <span class="keyword">for</span> (SearchHit searchHit : searchHits) &#123;</span><br><span class="line">        <span class="comment">//处理高亮结果</span></span><br><span class="line">        Map&lt;String, HighlightField&gt; highlightFields = searchHit.getHighlightFields();</span><br><span class="line">        HighlightField highlightField = highlightFields.get(<span class="string">"title"</span>);</span><br><span class="line">        <span class="comment">//高亮内容数组</span></span><br><span class="line">        Text[] fragments = highlightField.getFragments();</span><br><span class="line">        <span class="comment">//转为高亮字符串</span></span><br><span class="line">        String title = StringUtils.join(fragments);</span><br><span class="line">        <span class="comment">//获取查询结果数据  json格式字符串</span></span><br><span class="line">        String sourceAsString = searchHit.getSourceAsString();</span><br><span class="line">        <span class="comment">//解析json</span></span><br><span class="line">        Goods goods = gson.fromJson(sourceAsString, Goods<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        <span class="comment">//设置title字段</span></span><br><span class="line">        goods.setTitle(title);</span><br><span class="line">        System.out.println(goods);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键代码：</p>
+<ul>
+<li><p>查询条件中添加高亮字段：</p>
+<ul>
+<li><img data-src="/assets/1554356961547.png" alt="1554356961547"></li>
+<li><code>new HighlightBuilder()</code>：创建高亮构建器</li>
+<li><code>.field(&quot;title&quot;)</code>：指定高亮字段</li>
+<li><code>.preTags(&quot;&quot;)</code>和<code>.postTags(&quot;&quot;)</code>：指定高亮的前置和后置标签</li>
+</ul>
+</li>
+<li><p>解析高亮结果：</p>
+<p>  <img data-src="/assets/1554357142660.png" alt="1554357142660"></p>
+</li>
+</ul>
+<h1 id="4-SpringDataElasticsearch"><a href="#4-SpringDataElasticsearch" class="headerlink" title="4.SpringDataElasticsearch"></a>4.SpringDataElasticsearch</h1><p>接下来我们学习Spring提供的elasticsearch组件：Spring Data Elasticsearch</p>
+<h2 id="4-1-什么是SpringDataElasticsearch"><a href="#4-1-什么是SpringDataElasticsearch" class="headerlink" title="4.1.什么是SpringDataElasticsearch"></a>4.1.什么是SpringDataElasticsearch</h2><p>SpringDataElasticsearch（以后简称SDE）是Spring Data项目下的一个子模块。</p>
+<p>查看 Spring Data的官网：<a href="http://projects.spring.io/spring-data/" target="_blank" rel="noopener">http://projects.spring.io/spring-data/</a></p>
+<p><img data-src="/assets/1526539628841.png" alt="1526539628841"> </p>
+<p>Spring Data 的使命是给各种数据访问提供统一的编程接口，不管是关系型数据库（如MySQL），还是非关系数据库（如Redis），或者类似Elasticsearch这样的索引数据库。从而简化开发人员的代码，提高开发效率。</p>
+<p>包含很多不同数据操作的模块：</p>
+<p><img data-src="/assets/1526539880872.png" alt="1526539880872"> </p>
+<p>Spring Data Elasticsearch的页面：<a href="https://projects.spring.io/spring-data-elasticsearch/" target="_blank" rel="noopener">https://projects.spring.io/spring-data-elasticsearch/</a></p>
+<p><img data-src="/assets/1526540053252.png" alt="1526540053252"> </p>
+<p>特征：</p>
+<ul>
+<li>支持Spring的基于<code>@Configuration</code>的java配置方式，或者XML配置方式</li>
+<li>提供了用于操作ES的便捷工具类<strong><code>ElasticsearchTemplate</code></strong>。包括实现文档到POJO之间的自动智能映射。</li>
+<li>利用Spring的数据转换服务实现的功能丰富的对象映射</li>
+<li>基于注解的元数据映射方式，而且可扩展以支持更多不同的数据格式</li>
+<li>根据持久层接口自动生成对应实现方法，无需人工编写基本操作代码（类似mybatis，根据接口自动得到实现）。当然，也支持人工定制查询</li>
+</ul>
+<h2 id="4-2-配置SpringDataElasticsearch"><a href="#4-2-配置SpringDataElasticsearch" class="headerlink" title="4.2.配置SpringDataElasticsearch"></a>4.2.配置SpringDataElasticsearch</h2><p>我们在pom文件中，引入SpringDataElasticsearch的启动器：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-data-elasticsearch<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>然后，只需要在resources下新建application.yml文件，引入elasticsearch的host和port即可：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">application:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">es-demo</span></span><br><span class="line">  <span class="attr">data:</span></span><br><span class="line">    <span class="attr">elasticsearch:</span></span><br><span class="line">      <span class="attr">cluster-name:</span> <span class="string">leyou-elastic</span></span><br><span class="line">      <span class="attr">cluster-nodes:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span><span class="string">:9301,127.0.0.1:9302,127.0.0.1:9303</span></span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是，SpringDataElasticsearch底层使用的不是Elasticsearch提供的RestHighLevelClient，而是TransportClient，并不采用Http协议通信，而是访问elasticsearch对外开放的tcp端口，我们之前集群配置中，设置的分别是：9301,9302,9303</p>
+<p>添加引导类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ESApplication</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(ESApplication<span class="class">.<span class="keyword">class</span>,<span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>另外，SpringBoot已经帮我们配置好了各种SDE配置，并且注册了一个ElasticsearchTemplate供我们使用。接下来一起来试试吧。</p>
+<h2 id="4-3-索引库操作"><a href="#4-3-索引库操作" class="headerlink" title="4.3.索引库操作"></a>4.3.索引库操作</h2><h3 id="4-3-1-创建索引库-amp-并指定映射"><a href="#4-3-1-创建索引库-amp-并指定映射" class="headerlink" title="4.3.1.创建索引库&amp;并指定映射"></a>4.3.1.创建索引库&amp;并指定映射</h3><p>准备一个pojo对象</p>
+<p>然后准备一个新的实体类，作为下面与索引库对应的文档：</p>
+<p>实际上，与我们自定义工具类类似，SDE也是通过实体类上的注解来配置索引库信息的，我们需要在Goods上添加下面的一些注解：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@Document</span>(indexName = <span class="string">"itcast"</span>,type = <span class="string">"goods"</span>,shards = <span class="number">3</span>,replicas = <span class="number">1</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Goods</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="meta">@Field</span>(type = FieldType.Text, analyzer = <span class="string">"ik_max_word"</span>)</span><br><span class="line">    <span class="keyword">private</span> String title; <span class="comment">//标题</span></span><br><span class="line">    <span class="meta">@Field</span>(type = FieldType.Keyword)</span><br><span class="line">    <span class="keyword">private</span> String category;<span class="comment">// 分类</span></span><br><span class="line">    <span class="meta">@Field</span>(type = FieldType.Keyword)</span><br><span class="line">    <span class="keyword">private</span> String brand; <span class="comment">// 品牌</span></span><br><span class="line">    <span class="meta">@Field</span>(type = FieldType.Double)</span><br><span class="line">    <span class="keyword">private</span> Double price; <span class="comment">// 价格</span></span><br><span class="line">    <span class="meta">@Field</span>(type = FieldType.Keyword,index = <span class="keyword">false</span>)</span><br><span class="line">    <span class="keyword">private</span> String images; <span class="comment">// 图片地址</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们先创建一个测试类，然后注入ElasticsearchTemplate：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">SpringBootTest</span></span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">SpringElasticsearchTest</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ElasticsearchTemplate esTemplate;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>下面是创建索引库的API示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">SpringBootTest</span></span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">SpringDataESTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ElasticsearchTemplate esTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建索引库</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testCreateIndex</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">        esTemplate.createIndex(Goods<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建映射</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testCreateMapping</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">        esTemplate.putMapping(Goods<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>几个用到的注解：</p>
+<ul>
+<li>@Document：声明索引库配置<ul>
+<li>indexName：索引库名称</li>
+<li>type：类型名称，默认是“docs”</li>
+<li>shards：分片数量，默认5</li>
+<li>replicas：副本数量，默认1</li>
+</ul>
+</li>
+<li>@Id：声明实体类的id</li>
+<li>@Field：声明字段属性<ul>
+<li>type：字段的数据类型</li>
+<li>analyzer：指定分词器类型</li>
+<li>index：是否创建索引</li>
+</ul>
+</li>
+</ul>
+<p>查看索引库：</p>
+<p><img data-src="/assets/1604735852922.png" alt="60473585292"></p>
+<h2 id="4-4-索引数据CRUD"><a href="#4-4-索引数据CRUD" class="headerlink" title="4.4.索引数据CRUD"></a>4.4.索引数据CRUD</h2><p>SDE的索引数据CRUD并没有封装在ElasticsearchTemplate中，而是有一个叫做ElasticsearchRepository的接口：</p>
+<p><img data-src="/assets/1554378139181.png" alt="1554378139181"> </p>
+<p>我们需要自定义接口，继承ElasticsearchRespository：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> cn.itcast.es.pojo.Goods;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.elasticsearch.repository.ElasticsearchRepository;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">GoodsRepository</span> <span class="keyword">extends</span> <span class="title">ElasticsearchRepository</span>&lt;<span class="title">Goods</span>,<span class="title">Long</span>&gt; </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="4-4-1-创建索引数据"><a href="#4-4-1-创建索引数据" class="headerlink" title="4.4.1.创建索引数据"></a>4.4.1.创建索引数据</h3><p>创建索引有单个创建和批量创建之分，先来看单个创建</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 新增文档数据</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testSave</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    Goods goods = <span class="keyword">new</span> Goods(<span class="number">1L</span>, <span class="string">"小米手机9"</span>, <span class="string">" 手机"</span>,</span><br><span class="line">                            <span class="string">"小米"</span>, <span class="number">3499.00</span>, <span class="string">"http://image.leyou.com/13123.jpg"</span>);</span><br><span class="line">    goodsRepository.save(goods);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>再来看批量创建：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 批量新增</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testSaveAll</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">// 准备文档数据：</span></span><br><span class="line">    List&lt;Goods&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    list.add(<span class="keyword">new</span> Goods(<span class="number">1L</span>, <span class="string">"小米手机7"</span>, <span class="string">"手机"</span>, <span class="string">"小米"</span>, <span class="number">3299.00</span>, <span class="string">"/13123.jpg"</span>));</span><br><span class="line">    list.add(<span class="keyword">new</span> Goods(<span class="number">2L</span>, <span class="string">"坚果手机R1"</span>, <span class="string">"手机"</span>, <span class="string">"锤子"</span>, <span class="number">3699.00</span>, <span class="string">"/13123.jpg"</span>));</span><br><span class="line">    list.add(<span class="keyword">new</span> Goods(<span class="number">3L</span>, <span class="string">"华为META10"</span>, <span class="string">"手机"</span>, <span class="string">"华为"</span>, <span class="number">4499.00</span>, <span class="string">"/13123.jpg"</span>));</span><br><span class="line">    list.add(<span class="keyword">new</span> Goods(<span class="number">4L</span>, <span class="string">"小米Mix2S"</span>, <span class="string">"手机"</span>, <span class="string">"小米"</span>, <span class="number">4299.00</span>, <span class="string">"/13123.jpg"</span>));</span><br><span class="line">    list.add(<span class="keyword">new</span> Goods(<span class="number">5L</span>, <span class="string">"荣耀V10"</span>, <span class="string">"手机"</span>, <span class="string">"华为"</span>, <span class="number">2799.00</span>, <span class="string">"/13123.jpg"</span>));</span><br><span class="line">    goodsRepository.saveAll(list);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过elasticsearch-head查看：</p>
+<p><img data-src="/assets/1604736377576.png" alt="60473637757"></p>
+<h3 id="4-4-2-查询索引数据"><a href="#4-4-2-查询索引数据" class="headerlink" title="4.4.2.查询索引数据"></a>4.4.2.查询索引数据</h3><p>默认提供了根据id查询，查询所有两个功能：</p>
+<blockquote>
+<p>根据id查询</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testFindById</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">       Optional&lt;Goods&gt; optional = goodsRepository.findById(<span class="number">1L</span>);</span><br><span class="line">       Goods goods = optional.get();</span><br><span class="line">       System.out.println(goods);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<p><img data-src="/assets/1604736480478.png" alt="60473648047"></p>
+<blockquote>
+<p>查询所有：</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testFindAll</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    Iterable&lt;Goods&gt; goods = goodsRepository.findAll();</span><br><span class="line">    <span class="keyword">for</span> (Goods good : goods) &#123;</span><br><span class="line">        System.out.println(good);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<p><img data-src="/assets/1604736563051.png" alt="60473656305"></p>
+<p>删除操作</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testDelete</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    goodsRepository.deleteById(<span class="number">1L</span>);</span><br><span class="line">    goodsRepository.deleteAll();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-3-自定义方法查询"><a href="#4-4-3-自定义方法查询" class="headerlink" title="4.4.3.自定义方法查询"></a>4.4.3.自定义方法查询</h3><p>GoodsRepository提供的查询方法有限，但是它却提供了非常强大的自定义查询功能：</p>
+<p>只要遵循SpringData提供的语法，我们可以任意定义方法声明：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> cn.itcast.es.pojo.Goods;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.elasticsearch.repository.ElasticsearchRepository;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">GoodsRepository</span> <span class="keyword">extends</span> <span class="title">ElasticsearchRepository</span>&lt;<span class="title">Goods</span>,<span class="title">Long</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 自定义查询</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> brand</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">List&lt;Goods&gt; <span class="title">findByBrand</span><span class="params">(String brand)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>无需写实现，SDE会自动帮我们实现该方法，我们只需要用即可：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 自定义查询</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testFindByCondition</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//基于品牌查询</span></span><br><span class="line">    <span class="comment">//List&lt;Goods&gt; goods = goodsRepository.findByBrand("华为");</span></span><br><span class="line">    <span class="comment">//List&lt;Goods&gt; goods = goodsRepository.findByBrandAndCategory("华为","手机");</span></span><br><span class="line">    List&lt;Goods&gt; goods = goodsRepository.findByBrandOrCategory(<span class="string">"华为"</span>,<span class="string">"电视"</span>);</span><br><span class="line">    <span class="keyword">for</span> (Goods good : goods) &#123;</span><br><span class="line">        System.out.println(good);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<p><img data-src="/assets/1604736863430.png" alt="60473686343"></p>
+<p>支持的一些语法示例：</p>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Sample</th>
+<th>Elasticsearch Query String</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>And</code></td>
+<td><code>findByNameAndPrice</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : [ {&quot;field&quot; : {&quot;name&quot; : &quot;?&quot;}}, {&quot;field&quot; : {&quot;price&quot; : &quot;?&quot;}} ]}}</code></td>
+</tr>
+<tr>
+<td><code>Or</code></td>
+<td><code>findByNameOrPrice</code></td>
+<td><code>{&quot;bool&quot; : {&quot;should&quot; : [ {&quot;field&quot; : {&quot;name&quot; : &quot;?&quot;}}, {&quot;field&quot; : {&quot;price&quot; : &quot;?&quot;}} ]}}</code></td>
+</tr>
+<tr>
+<td><code>Is</code></td>
+<td><code>findByName</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;field&quot; : {&quot;name&quot; : &quot;?&quot;}}}}</code></td>
+</tr>
+<tr>
+<td><code>Not</code></td>
+<td><code>findByNameNot</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must_not&quot; : {&quot;field&quot; : {&quot;name&quot; : &quot;?&quot;}}}}</code></td>
+</tr>
+<tr>
+<td><code>Between</code></td>
+<td><code>findByPriceBetween</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;range&quot; : {&quot;price&quot; : {&quot;from&quot; : ?,&quot;to&quot; : ?,&quot;include_lower&quot; : true,&quot;include_upper&quot; : true}}}}}</code></td>
+</tr>
+<tr>
+<td><code>LessThanEqual</code></td>
+<td><code>findByPriceLessThan</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;range&quot; : {&quot;price&quot; : {&quot;from&quot; : null,&quot;to&quot; : ?,&quot;include_lower&quot; : true,&quot;include_upper&quot; : true}}}}}</code></td>
+</tr>
+<tr>
+<td><code>GreaterThanEqual</code></td>
+<td><code>findByPriceGreaterThan</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;range&quot; : {&quot;price&quot; : {&quot;from&quot; : ?,&quot;to&quot; : null,&quot;include_lower&quot; : true,&quot;include_upper&quot; : true}}}}}</code></td>
+</tr>
+<tr>
+<td><code>Before</code></td>
+<td><code>findByPriceBefore</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;range&quot; : {&quot;price&quot; : {&quot;from&quot; : null,&quot;to&quot; : ?,&quot;include_lower&quot; : true,&quot;include_upper&quot; : true}}}}}</code></td>
+</tr>
+<tr>
+<td><code>After</code></td>
+<td><code>findByPriceAfter</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;range&quot; : {&quot;price&quot; : {&quot;from&quot; : ?,&quot;to&quot; : null,&quot;include_lower&quot; : true,&quot;include_upper&quot; : true}}}}}</code></td>
+</tr>
+<tr>
+<td><code>Like</code></td>
+<td><code>findByNameLike</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;field&quot; : {&quot;name&quot; : {&quot;query&quot; : &quot;?*&quot;,&quot;analyze_wildcard&quot; : true}}}}}</code></td>
+</tr>
+<tr>
+<td><code>StartingWith</code></td>
+<td><code>findByNameStartingWith</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;field&quot; : {&quot;name&quot; : {&quot;query&quot; : &quot;?*&quot;,&quot;analyze_wildcard&quot; : true}}}}}</code></td>
+</tr>
+<tr>
+<td><code>EndingWith</code></td>
+<td><code>findByNameEndingWith</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;field&quot; : {&quot;name&quot; : {&quot;query&quot; : &quot;*?&quot;,&quot;analyze_wildcard&quot; : true}}}}}</code></td>
+</tr>
+<tr>
+<td><code>Contains/Containing</code></td>
+<td><code>findByNameContaining</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;field&quot; : {&quot;name&quot; : {&quot;query&quot; : &quot;**?**&quot;,&quot;analyze_wildcard&quot; : true}}}}}</code></td>
+</tr>
+<tr>
+<td><code>In</code></td>
+<td><code>findByNameIn(Collection&lt;String&gt;names)</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;bool&quot; : {&quot;should&quot; : [ {&quot;field&quot; : {&quot;name&quot; : &quot;?&quot;}}, {&quot;field&quot; : {&quot;name&quot; : &quot;?&quot;}} ]}}}}</code></td>
+</tr>
+<tr>
+<td><code>NotIn</code></td>
+<td><code>findByNameNotIn(Collection&lt;String&gt;names)</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must_not&quot; : {&quot;bool&quot; : {&quot;should&quot; : {&quot;field&quot; : {&quot;name&quot; : &quot;?&quot;}}}}}}</code></td>
+</tr>
+<tr>
+<td><code>Near</code></td>
+<td><code>findByStoreNear</code></td>
+<td><code>Not Supported Yet !</code></td>
+</tr>
+<tr>
+<td><code>True</code></td>
+<td><code>findByAvailableTrue</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;field&quot; : {&quot;available&quot; : true}}}}</code></td>
+</tr>
+<tr>
+<td><code>False</code></td>
+<td><code>findByAvailableFalse</code></td>
+<td><code>{&quot;bool&quot; : {&quot;must&quot; : {&quot;field&quot; : {&quot;available&quot; : false}}}}</code></td>
+</tr>
+<tr>
+<td><code>OrderBy</code></td>
+<td><code>findByAvailableTrueOrderByNameDesc</code></td>
+<td><code>{&quot;sort&quot; : [{ &quot;name&quot; : {&quot;order&quot; : &quot;desc&quot;} }],&quot;bool&quot; : {&quot;must&quot; : {&quot;field&quot; : {&quot;available&quot; : true}}}}</code></td>
+</tr>
+</tbody></table>
+<h2 id="4-5-原生查询"><a href="#4-5-原生查询" class="headerlink" title="4.5.原生查询"></a>4.5.原生查询</h2><p>如果觉得上述接口依然不符合你的需求，SDE也支持原生查询，这个时候还是使用ElasticsearchTemplate</p>
+<p>而查询条件的构建是通过一个名为<code>NativeSearchQueryBuilder</code>的类来完成的，不过这个类的底层还是使用的原生API中的<code>QueryBuilders</code>、<code>AggregationBuilders</code>、<code>HighlightBuilders</code>等工具。</p>
+<p>示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 原生查询方式  将SDE与restful Client查询方式整合在一起</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testNativeQuery</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//原生查询构建器</span></span><br><span class="line">    NativeSearchQueryBuilder queryBuilder = <span class="keyword">new</span> NativeSearchQueryBuilder();</span><br><span class="line">    <span class="comment">//设置查询对象（查询方式）</span></span><br><span class="line">    <span class="comment">//queryBuilder.withQuery(QueryBuilders.matchAllQuery());</span></span><br><span class="line">    queryBuilder.withQuery(QueryBuilders.matchQuery(<span class="string">"title"</span>,<span class="string">"手机"</span>));</span><br><span class="line">    <span class="comment">//queryBuilder.withQuery(QueryBuilders.rangeQuery("price").gte(1000).lte(3000));</span></span><br><span class="line">    <span class="comment">//过滤展示的内容</span></span><br><span class="line">    <span class="comment">//queryBuilder.withSourceFilter(new FetchSourceFilter(new String[]&#123;"title","price","images"&#125;,null));</span></span><br><span class="line">    <span class="comment">//分页、排序  注意：分页起始页码是从0开始</span></span><br><span class="line">    <span class="comment">//queryBuilder.withPageable(PageRequest.of(0,3));</span></span><br><span class="line">    <span class="comment">//queryBuilder.withPageable(PageRequest.of(0,3,Sort.by(Sort.Direction.DESC,"price")));</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//设置聚合条件  指定聚合三要素：聚合方式  聚合名称  聚合字段</span></span><br><span class="line">    queryBuilder.addAggregation(AggregationBuilders.terms(<span class="string">"brandAgg"</span>).field(<span class="string">"brand"</span>));</span><br><span class="line">    <span class="comment">//设置高亮条件</span></span><br><span class="line">    <span class="comment">//queryBuilder.withHighlightFields(new HighlightBuilder.Field("title").preTags("&lt;font color='red'&gt;").postTags("&lt;/font&gt;"));</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行查询</span></span><br><span class="line">    AggregatedPage&lt;Goods&gt; result = esTemplate.queryForPage(queryBuilder.build(), Goods<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//解析聚合结果</span></span><br><span class="line">    <span class="comment">/*Aggregations aggregations = result.getAggregations();</span></span><br><span class="line"><span class="comment">        Terms brandAgg = aggregations.get("brandAgg");</span></span><br><span class="line"><span class="comment">        List&lt;? extends Terms.Bucket&gt; buckets = brandAgg.getBuckets();</span></span><br><span class="line"><span class="comment">        for (Terms.Bucket bucket : buckets) &#123;</span></span><br><span class="line"><span class="comment">            System.out.println("聚合得到的品牌是："+bucket.getKeyAsString());</span></span><br><span class="line"><span class="comment">            System.out.println("该名牌对应的商品数量是："+bucket.getDocCount());</span></span><br><span class="line"><span class="comment">        &#125;*/</span></span><br><span class="line"></span><br><span class="line">    System.out.println(<span class="string">"总记录数："</span>+result.getTotalElements());</span><br><span class="line">    System.out.println(<span class="string">"总页数："</span>+result.getTotalPages());</span><br><span class="line">    <span class="comment">//获取查询结果集</span></span><br><span class="line">    List&lt;Goods&gt; content = result.getContent();</span><br><span class="line">    <span class="keyword">for</span> (Goods goods : content) &#123;</span><br><span class="line">        System.out.println(goods);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述查询不支持高亮结果，悲剧。</p>
+<h1 id="5-经验值"><a href="#5-经验值" class="headerlink" title="5.经验值"></a>5.经验值</h1><h2 id="1-往ES6同一个索引库中插入多个类型会报错"><a href="#1-往ES6同一个索引库中插入多个类型会报错" class="headerlink" title="1.往ES6同一个索引库中插入多个类型会报错"></a>1.往ES6同一个索引库中插入多个类型会报错</h2><blockquote>
+<p>在ES6中新建一个索引库，先添加一个映射，再添加一个映射会报错</p>
+</blockquote>
+<blockquote>
+<p>REST API 调用代码如下</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">PUT itheima</span><br><span class="line">PUT itheima/_mapping/table1</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"properties"</span>: &#123;</span><br><span class="line">    <span class="string">"title"</span>:&#123;</span><br><span class="line">      <span class="string">"type"</span>: <span class="string">"text"</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"images"</span>:&#123;</span><br><span class="line">      <span class="string">"type"</span>: <span class="string">"keyword"</span>,</span><br><span class="line">      <span class="string">"index"</span>: <span class="keyword">false</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"price"</span>:&#123;</span><br><span class="line">      <span class="string">"type"</span>: <span class="string">"float"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">PUT itheima/_mapping/table2</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"properties"</span>: &#123;</span><br><span class="line">    <span class="string">"title1"</span>:&#123;</span><br><span class="line">      <span class="string">"type"</span>: <span class="string">"text"</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"images1"</span>:&#123;</span><br><span class="line">      <span class="string">"type"</span>: <span class="string">"keyword"</span>,</span><br><span class="line">      <span class="string">"index"</span>: <span class="keyword">false</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"price1"</span>:&#123;</span><br><span class="line">      <span class="string">"type"</span>: <span class="string">"float"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-出现的问题"><a href="#2-出现的问题" class="headerlink" title="2.出现的问题"></a>2.出现的问题</h2><p><img data-src="/assets/image-20200716091141136.png" alt="image-20200716091141136"></p>
+<h2 id="3-问题的分析"><a href="#3-问题的分析" class="headerlink" title="3.问题的分析"></a>3.问题的分析</h2><blockquote>
+<p>在ES5.X版本中是可以在同一个索引库下添加多个映射类型的，每个映射类型相当于索引库来说就类似于MySQL中的数据库和表</p>
+<p>从ES6.X开始不允许在同一个索引中添加多个映射类型</p>
+<p>从ES5.X升级到ES6.X的多个映射类型会被保留</p>
+<p>但是通过API来创建的话就只允许一个映射类型</p>
+<p>在ES7.X版本中映射就被废弃了，如果想在ES6升级到ES7还兼容的话，映射类型可以设置为固定的<code>_doc</code></p>
+</blockquote>
+<blockquote>
+</blockquote>
+<h2 id="4-问题解决办法"><a href="#4-问题解决办法" class="headerlink" title="4.问题解决办法"></a>4.问题解决办法</h2><blockquote>
+<p>在一个索引库中只添加一种映射类型，如果之后有升级ES到7.X版本的话，建议这个类型为<code>_doc</code>，请求代码如下</p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">PUT itheima</span><br><span class="line"></span><br><span class="line">PUT itheima/_mapping/_doc</span><br><span class="line">&#123;</span><br><span class="line">  "properties": &#123;</span><br><span class="line">    "title":&#123;</span><br><span class="line">      "type": "text"</span><br><span class="line">    &#125;,</span><br><span class="line">    "images":&#123;</span><br><span class="line">      "type": "keyword",</span><br><span class="line">      "index": false</span><br><span class="line">    &#125;,</span><br><span class="line">    "price":&#123;</span><br><span class="line">      "type": "float"</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="6-知识扩展：自定义结果处理器"><a href="#6-知识扩展：自定义结果处理器" class="headerlink" title="6.知识扩展：自定义结果处理器"></a>6.知识扩展：自定义结果处理器</h1><p>要支持高亮，必须自定义结果处理器来实现，结果处理器是一个接口：</p>
+<p><img data-src="/assets/1554382981272.png" alt="1554382981272"></p>
+<p>可以看到，处理器中的方法接受3个参数：</p>
+<ul>
+<li><code>SearchResponse</code>：搜索的Response，原生查询中就见到过</li>
+<li><code>Class&lt;T&gt; clazz</code>：结果的实体类的字节码，本例中的是Goods.class</li>
+<li><code>Pageable</code>：分页参数，就是我们定义的PageRequest</li>
+</ul>
+<p>返回值一个：<code>AggregatedPage&lt;T&gt;</code>，就是带聚合的分页结果</p>
+<p>我们可以实现这个方法，在方法内部对响应处理，带上高亮结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 处理高亮的配置类</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MySearchResultMapper</span> <span class="keyword">implements</span> <span class="title">SearchResultMapper</span> </span>&#123;</span><br><span class="line">    Gson gson = <span class="keyword">new</span> Gson();</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;T&gt; <span class="function">AggregatedPage&lt;T&gt; <span class="title">mapResults</span><span class="params">(SearchResponse response, Class&lt;T&gt; clazz, Pageable pageable)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//获取查询的数据结果</span></span><br><span class="line">        SearchHits hits = response.getHits();</span><br><span class="line">        <span class="keyword">long</span> total = hits.getTotalHits();</span><br><span class="line">        <span class="comment">//获取聚合结果</span></span><br><span class="line">        Aggregations aggregations = response.getAggregations();</span><br><span class="line">        String scrollId = response.getScrollId();</span><br><span class="line">        <span class="comment">//最大得分</span></span><br><span class="line">        <span class="keyword">float</span> maxScore = hits.getMaxScore();</span><br><span class="line">        <span class="comment">//自己封装高亮结果  goods</span></span><br><span class="line">        List&lt;T&gt; content = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//获取高亮结果，封装到content结果集</span></span><br><span class="line">        SearchHit[] searchHits = hits.getHits();</span><br><span class="line">        <span class="keyword">for</span> (SearchHit searchHit : searchHits) &#123;</span><br><span class="line">            <span class="comment">//处理高亮结果</span></span><br><span class="line">            Map&lt;String, HighlightField&gt; highlightFields = searchHit.getHighlightFields();</span><br><span class="line">            <span class="keyword">for</span>(String key:highlightFields.keySet())&#123;</span><br><span class="line">                HighlightField highlightField = highlightFields.get(key);</span><br><span class="line">                <span class="comment">//高亮内容数组</span></span><br><span class="line">                Text[] fragments = highlightField.getFragments();</span><br><span class="line">                <span class="comment">//转为高亮字符串</span></span><br><span class="line">                String value = StringUtils.join(fragments);</span><br><span class="line">                <span class="comment">//获取查询结果数据  json格式字符串</span></span><br><span class="line">                String sourceAsString = searchHit.getSourceAsString();</span><br><span class="line">                T t = gson.fromJson(sourceAsString, clazz);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">//封装高亮数据到对象中</span></span><br><span class="line">                    BeanUtils.setProperty(t,key,value);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//将t对象存入content集合</span></span><br><span class="line">                content.add(t);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> AggregatedPageImpl&lt;T&gt;(content,pageable,total,aggregations,scrollId,maxScore);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后再次编写带高亮查询：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 原生查询方式  将SDE与restful Client查询方式整合在一起</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testNativeQuery</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="comment">//原生查询构建器</span></span><br><span class="line">    NativeSearchQueryBuilder queryBuilder = <span class="keyword">new</span> NativeSearchQueryBuilder();</span><br><span class="line">    queryBuilder.withQuery(QueryBuilders.matchQuery(<span class="string">"title"</span>,<span class="string">"手机"</span>));       </span><br><span class="line">    <span class="comment">//设置高亮条件</span></span><br><span class="line">    queryBuilder.withHighlightFields(<span class="keyword">new</span> HighlightBuilder.Field(<span class="string">"title"</span>).preTags(<span class="string">"&lt;font color='red'&gt;"</span>).postTags(<span class="string">"&lt;/font&gt;"</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行查询</span></span><br><span class="line">    AggregatedPage&lt;Goods&gt; result = esTemplate.queryForPage(queryBuilder.build(), Goods<span class="class">.<span class="keyword">class</span>,<span class="title">new</span> <span class="title">MySearchResultMapper</span>())</span>;   </span><br><span class="line"></span><br><span class="line">    System.out.println(<span class="string">"总记录数："</span>+result.getTotalElements());</span><br><span class="line">    System.out.println(<span class="string">"总页数："</span>+result.getTotalPages());</span><br><span class="line">    <span class="comment">//获取查询结果集</span></span><br><span class="line">    List&lt;Goods&gt; content = result.getContent();</span><br><span class="line">    <span class="keyword">for</span> (Goods goods : content) &#123;</span><br><span class="line">        System.out.println(goods);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<p><img data-src="/assets/1604740513917.png" alt="60474051391"></p>
+
+    </div>
+
+    
+    
+    
+    
+    <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束 <i class="fa fa-heart"></i> 感谢阅读-------------</div>
+
+    
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/images/wechat_channel.jpg">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Elasticsearch%E9%9B%86%E7%BE%A4/" rel="tag"><i class="fa fa-tag"></i> Elasticsearch集群</a>
+              <a href="/tags/Elasticsearch%E5%AE%A2%E6%88%B7%E7%AB%AF/" rel="tag"><i class="fa fa-tag"></i> Elasticsearch客户端</a>
+              <a href="/tags/SpringDataElasticsearch/" rel="tag"><i class="fa fa-tag"></i> SpringDataElasticsearch</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/11/06/lucene&Elasticsearch/" rel="prev" title="Lucene&Elasticsearch">
+      <i class="fa fa-chevron-left"></i> Lucene&Elasticsearch
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/11/08/Docker/" rel="next" title="Docker">
+      Docker <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sunmoon</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">925k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">14:01</span>
+</div>
+
+
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script defer src="//cdn.jsdelivr.net/gh/next-theme/theme-next-three@1/three.min.js"></script>
+    <script defer src="//cdn.jsdelivr.net/gh/next-theme/theme-next-three@1/canvas_lines.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <!-- 樱花特效 -->
+  
+      <script async src="/js/src/fairyDustCursor.js"></script>
+  
+
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
+    <!-- 页面点击小红心 -->
+    <script type="text/javascript" src="/js/src/love.js"></script>
+
+
+
